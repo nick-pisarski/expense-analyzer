@@ -1,5 +1,7 @@
 """Base class for file readers"""
 
+import csv
+
 
 class BaseFileReader:
     """Base class for file readers"""
@@ -8,10 +10,10 @@ class BaseFileReader:
         """Initialize the file reader with a file path"""
         self.file_path = file_path
 
-    def read_file(self):
+    def read_csv_file(self) -> list[dict]:
         """Read the file and return a list of rows"""
-        raise NotImplementedError("Subclasses must implement read_file()")
-
-    def get_data(self):
-        """Get the data from the file"""
-        raise NotImplementedError("Subclasses must implement get_data()")
+        with open(self.file_path, "r") as file:
+            reader = csv.reader(file)
+            rows = list(reader)  # Convert iterator to list
+            headers = rows[0]
+            return [dict(zip(headers, row)) for row in rows[1:]]
