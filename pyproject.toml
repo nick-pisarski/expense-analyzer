@@ -2,7 +2,7 @@
 name = "expense-analyzer"
 version = "0.1.0"
 description = "A workflow for gathering, categorizing, and summarizing expenses, then creating a budget based on that."
-authors = ["Your Name <your.email@example.com>"]
+authors = ["Nick Pisarski <nick.pisarski@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 packages = [{include = "expense_analyzer"}]
