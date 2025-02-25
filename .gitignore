@@ -166,4 +166,4 @@ cython_debug/
 .env
 
 # Poetry virtual environment
-.venv/ 
+.venv/
