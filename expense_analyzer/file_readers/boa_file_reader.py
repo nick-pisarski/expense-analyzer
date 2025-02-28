@@ -2,8 +2,6 @@
 
 from expense_analyzer.file_readers.base_file_reader import BaseFileReader
 
-import csv
-
 
 class BankOfAmericaTransaction:
     """A transaction from Bank of America"""
