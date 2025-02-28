@@ -13,6 +13,7 @@ psycopg2-binary = "^2.9"
 pandas = "^2.0"
 openai = "^1.0"  # Replace with your actual LLM library
 matplotlib = "^3.7"
+pdfplumber = "^0.11.5"
 
 
 [tool.poetry.group.dev.dependencies]
