@@ -7,6 +7,9 @@ __pycache__/
 # C extensions
 *.so
 
+# Mac
+.DS_Store
+
 # Distribution / packaging
 .Python
 build/
@@ -163,6 +166,10 @@ cython_debug/
 .vscode/*
 !.vscode/launch.json
 
+# Cursor
+.cursor/*
+!.cursor/rules
+
 # dotenv
 .env
 
@@ -171,3 +178,4 @@ cython_debug/
 
 # Data
 data/
+input/
