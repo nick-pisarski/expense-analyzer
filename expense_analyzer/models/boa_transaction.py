@@ -1,6 +1,3 @@
-"""File reader for Bank of America CSV files"""
-
-from expense_analyzer.file_readers.base_file_reader import BaseFileReader
 from datetime import datetime
 from typing import Optional
 
@@ -20,7 +17,8 @@ class BankOfAmericaTransaction:
         self.reference_number = data.get("reference_number")
         self.account_number = data.get("account_number")
         self.transaction_type = data.get("transaction_type", self._determine_transaction_type())
-        self.category = None 
+        self.category = None
+
     def _determine_transaction_type(self) -> str:
         """Determine the transaction type based on the amount"""
         if self.amount < 0:
@@ -98,31 +96,3 @@ class BankOfAmericaTransaction:
     def __repr__(self):
         """Representation of the transaction"""
         return self.__str__()
-
-
-class BankOfAmericaFileReader(BaseFileReader):
-    """File reader for Bank of America CSV files"""
-
-    def __init__(self, file_path: str):
-        super().__init__(file_path)
-
-    def read_transactions(self) -> list[BankOfAmericaTransaction]:
-        """Read the file and return a list of transactions"""
-        data = self.read_csv_file()
-        return [BankOfAmericaTransaction(row) for row in data]
-
-    def __str__(self):
-        """String representation of the file reader"""
-        return f"BankOfAmericaFileReader(file_path={self.file_path})"
-
-    def __repr__(self):
-        """Representation of the file reader"""
-        return self.__str__()
-
-
-if __name__ == "__main__":
-    reader = BankOfAmericaFileReader("data/test.csv")
-    transactions = reader.read_transactions()
-
-    for transaction in transactions:
-        print(transaction)

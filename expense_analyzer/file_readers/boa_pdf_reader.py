@@ -5,7 +5,7 @@ import pdfplumber
 import logging
 from datetime import datetime
 from expense_analyzer.file_readers.base_file_reader import BaseFileReader
-from expense_analyzer.file_readers.boa_file_reader import BankOfAmericaTransaction
+from expense_analyzer.models.boa_transaction import BankOfAmericaTransaction
 from collections import defaultdict
 
 
