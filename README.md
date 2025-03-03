@@ -21,3 +21,12 @@ Collect the above for the following:
 - Per Year
 - Per Month
 - Average Month
+
+## To do
+
+- Implement Categories and applying them to Transactions
+- Report Generation
+    - Markdown Summary
+    - PDF with graphs, etc
+- Implement Other File Readers
+    - Bank Statements
