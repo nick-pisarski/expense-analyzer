@@ -1,6 +1,5 @@
 """Main controller class for expense analysis"""
 
-import os
 import logging
 from pathlib import Path
 from typing import List, Dict, Optional
@@ -8,7 +7,8 @@ from datetime import datetime
 from collections import defaultdict
 
 from expense_analyzer.file_readers.boa_pdf_reader import BankOfAmericaPdfReader
-from expense_analyzer.models.boa_transaction import BankOfAmericaTransaction
+from expense_analyzer.models.transaction import Transaction
+from expense_analyzer.models.expense_report_data import ExpenseReportData
 
 
 class ExpenseAnalyzer:
@@ -23,7 +23,7 @@ class ExpenseAnalyzer:
         """
         self.input_dir = Path(input_dir)
         self.output_dir = Path(output_dir)
-        self.transactions: List[BankOfAmericaTransaction] = []
+        self.transactions: List[Transaction] = []
         self.logger = logging.getLogger(__name__)
 
         # Ensure directories exist
@@ -37,7 +37,6 @@ class ExpenseAnalyzer:
         # Create subdirectories for different banks/sources
         (self.input_dir / "bank_of_america").mkdir(exist_ok=True)
         (self.output_dir / "reports").mkdir(exist_ok=True)
-        (self.output_dir / "analytics").mkdir(exist_ok=True)
 
     def process_all_documents(self) -> None:
         """Process all documents in the input directory"""
@@ -48,6 +47,9 @@ class ExpenseAnalyzer:
 
         # TODO: Add processing for other banks/sources as needed
 
+        # Sort transactions by date
+        self.transactions.sort(key=lambda t: t.date_obj)
+
         self.logger.info(f"Processed {len(self.transactions)} total transactions")
 
     def _process_boa_documents(self) -> None:
@@ -57,7 +59,7 @@ class ExpenseAnalyzer:
             self.logger.warning(f"Bank of America directory not found: {boa_dir}")
             return
 
-        for pdf_file in boa_dir.glob("*.pdf"):
+        for pdf_file in list(boa_dir.glob("*.pdf")):
             try:
                 reader = BankOfAmericaPdfReader(str(pdf_file))
                 transactions = reader.read_transactions()
@@ -66,7 +68,7 @@ class ExpenseAnalyzer:
             except Exception as e:
                 self.logger.error(f"Error processing {pdf_file.name}: {e}")
 
-    def get_transactions_by_month(self) -> Dict[str, List[BankOfAmericaTransaction]]:
+    def get_transactions_by_month(self) -> Dict[str, List[Transaction]]:
         """Group transactions by month
 
         Returns:
@@ -74,14 +76,14 @@ class ExpenseAnalyzer:
         """
         monthly_transactions = defaultdict(list)
         for transaction in self.transactions:
-            if transaction.date:
-                month_key = transaction.date[:7]  # YYYY-MM format
+            if transaction.date_obj:
+                month_key = transaction.date_obj.strftime("%Y-%m")
                 monthly_transactions[month_key].append(transaction)
         return dict(monthly_transactions)
 
     def get_top_expenses(
-        self, limit: int = 10, start_date: Optional[str] = None, end_date: Optional[str] = None
-    ) -> List[BankOfAmericaTransaction]:
+        self, limit: int = 10, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None
+    ) -> List[Transaction]:
         """Get top expenses within an optional date range
 
         Args:
@@ -90,48 +92,49 @@ class ExpenseAnalyzer:
             end_date (Optional[str], optional): End date in YYYY-MM-DD format. Defaults to None.
 
         Returns:
-            List[BankOfAmericaTransaction]: List of top expenses sorted by amount
+            List[Transaction]: List of top expenses sorted by amount
         """
         expenses = [t for t in self.transactions if t.is_expense]
 
         if start_date:
-            expenses = [t for t in expenses if t.date >= start_date]
+            expenses = [t for t in expenses if t.date_obj >= start_date]
         if end_date:
-            expenses = [t for t in expenses if t.date <= end_date]
+            expenses = [t for t in expenses if t.date_obj <= end_date]
 
         expenses.sort(key=lambda t: t.absolute_amount, reverse=True)
         return expenses[:limit]
 
-    def generate_monthly_report(self, month: Optional[str] = None) -> Dict:
+    def generate_expense_report(
+        self, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None
+    ) -> ExpenseReportData:
         """Generate a monthly expense report
 
         Args:
-            month (Optional[str], optional): Month in YYYY-MM format. Defaults to current month.
+            month (Optional[int], optional): Month in YYYY-MM format. Defaults to current month.
 
         Returns:
             Dict: Report containing total expenses, income, and transaction summaries
+
         """
-        if month is None:
-            month = datetime.now().strftime("%Y-%m")
 
-        # Filter transactions for the specified month
-        month_transactions = [t for t in self.transactions if t.date and t.date.startswith(month)]
+        if start_date is None:
+            start_date = self.transactions[0].date_obj
+        if end_date is None:
+            end_date = self.transactions[-1].date_obj
 
-        expenses = [t for t in month_transactions if t.is_expense]
-        income = [t for t in month_transactions if not t.is_expense]
+        expenses = [t for t in self.transactions if t.is_expense]
+        income = [t for t in self.transactions if not t.is_expense]
 
-        report = {
-            "month": month,
-            "total_transactions": len(month_transactions),
-            "total_expenses": sum(t.amount for t in expenses),
-            "total_income": sum(t.amount for t in income),
-            "top_expenses": self.get_top_expenses(limit=5, start_date=f"{month}-01", end_date=f"{month}-31"),
-            "expense_categories": self._summarize_categories(expenses),
-        }
+        return ExpenseReportData(
+            start_date=start_date,
+            end_date=end_date,
+            total_transactions=len(self.transactions),
+            total_expenses=sum(t.amount for t in expenses),
+            total_income=sum(t.amount for t in income),
+            top_expenses=self.get_top_expenses(limit=5, start_date=start_date, end_date=end_date),
+        )
 
-        return report
-
-    def _summarize_categories(self, transactions: List[BankOfAmericaTransaction]) -> Dict[str, float]:
+    def _summarize_categories(self, transactions: List[Transaction]) -> Dict[str, float]:
         """Summarize total amounts by category
 
         Args:
@@ -140,22 +143,20 @@ class ExpenseAnalyzer:
         Returns:
             Dict[str, float]: Total amount spent in each category
         """
-        categories = defaultdict(float)
-        for transaction in transactions:
-            categories[transaction.category] += transaction.absolute_amount
-        return dict(categories)
+        raise NotImplementedError("Summarizing categories is not implemented")
 
-    def save_monthly_report(self, report: Dict, month: str) -> None:
+    def save_expense_report(self, report: ExpenseReportData, file_name: Optional[str] = None) -> None:
         """Save a monthly report to the output directory
 
         Args:
             report (Dict): Report data to save
             month (str): Month in YYYY-MM format
         """
-        import json
+        if file_name is None:
+            file_name = f"expense_report_{report.start_date.strftime('%Y-%m')}-to-{report.end_date.strftime('%Y-%m')}"
 
-        report_file = self.output_dir / "reports" / f"monthly_report_{month}.json"
+        report_file = self.output_dir / "reports" / f"{file_name}.md"
         with open(report_file, "w") as f:
-            json.dump(report, f, indent=2)
+            f.write(report.to_markdown())
 
         self.logger.info(f"Saved monthly report to {report_file}")

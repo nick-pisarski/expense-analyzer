@@ -7,15 +7,57 @@ from datetime import datetime
 from expense_analyzer.file_readers.base_file_reader import BaseFileReader
 from expense_analyzer.models.boa_transaction import BankOfAmericaTransaction
 from collections import defaultdict
+from dataclasses import dataclass
+
+
+@dataclass
+class BankOfAmericaStatementInfo:
+    """Statement information for Bank of America"""
+
+    period_start: datetime
+    period_end: datetime
+    closing_date: datetime
+    previous_balance: float
+    payments_and_credits: float
+    purchases_and_adjustments: float
+
+    def __str__(self):
+        """String representation of the statement info"""
+        return f"""Bank of America Statement Summary
+----------------------------------------
+Period: {self.period_start.strftime('%B %d, %Y')} - {self.period_end.strftime('%B %d, %Y')}
+Closing Date: {self.closing_date.strftime('%B %d, %Y')}
+
+Financial Summary:
+Previous Balance:          ${self.previous_balance:,.2f}
+Payments and Credits:      ${self.payments_and_credits:,.2f}
+Purchases and Adjustments: ${self.purchases_and_adjustments:,.2f}
+"""
+
+    def __repr__(self):
+        """Representation of the statement info"""
+        return f"Statement Info: {self.period_start} - {self.period_end}, Closing Date: {self.closing_date}, Previous Balance: {self.previous_balance}, Payments and Credits: {self.payments_and_credits}, Purchases and Adjustments: {self.purchases_and_adjustments}"
 
 
 class BankOfAmericaPdfReader(BaseFileReader):
     """File reader for Bank of America PDF statements"""
 
+    statement_info: dict = None
+
     def __init__(self, file_path: str):
         super().__init__(file_path)
         self.transactions = []
         self.logger = logging.getLogger(__name__)
+
+    def read_statement_info(self) -> dict:
+        """Read the PDF file and return a dictionary of statement information"""
+        try:
+            with pdfplumber.open(self.file_path) as pdf:
+                text = pdf.pages[0].extract_text()
+                return self._extract_statement_info(text)
+        except Exception as e:
+            self.logger.error(f"Error reading statement info: {e}")
+            return {}
 
     def read_transactions(self) -> list[BankOfAmericaTransaction]:
         """Read the PDF file and return a list of transactions"""
@@ -28,6 +70,9 @@ class BankOfAmericaPdfReader(BaseFileReader):
                 for page_num, page in enumerate(pdf.pages, 1):
                     self.logger.debug(f"Processing page {page_num} of {len(pdf.pages)}")
                     text = page.extract_text()
+
+                    if page_num == 1:
+                        self.statement_info = self._extract_statement_info(text)
 
                     # Find the transactions section
                     sections = self._extract_transaction_sections(text)
@@ -55,6 +100,51 @@ class BankOfAmericaPdfReader(BaseFileReader):
         except Exception as e:
             self.logger.error(f"Error reading PDF file: {e}")
             raise
+
+    def _extract_statement_info(self, text: str) -> BankOfAmericaStatementInfo:
+        """Extract statement information from the statement text
+
+        Returns:
+            BankOfAmericaStatementInfo: Statement information including:
+                - period_start: Start date of statement period
+                - period_end: End date of statement period
+                - closing_date: The closing date of the statement
+                - previous_balance: Previous statement balance
+                - payments_and_credits: Total payments and credits
+                - purchases_and_adjustments: Total purchases and adjustments
+        """
+        statement_info = {}
+
+        # Extract statement closing date
+        closing_date_match = re.search(r"Statement Closing Date\s+(\d{2}/\d{2}/\d{4})", text)
+        if closing_date_match:
+            statement_info["closing_date"] = datetime.strptime(closing_date_match.group(1), "%m/%d/%Y")
+
+        # Extract statement period from account header (e.g., "September 22 - October 21, 2024")
+        period_match = re.search(r"(\w+ \d{1,2}) - (\w+ \d{1,2}, \d{4})", text)
+        if period_match:
+            end_date = datetime.strptime(period_match.group(2), "%B %d, %Y")
+            start_date = datetime.strptime(period_match.group(1), "%B %d")
+            start_date = start_date.replace(year=end_date.year)
+            statement_info["period_start"] = start_date
+            statement_info["period_end"] = end_date
+
+        # Extract previous balance
+        previous_balance_match = re.search(r"Previous Balance\s+\$?([\d,]+\.\d{2})", text)
+        if previous_balance_match:
+            statement_info["previous_balance"] = float(previous_balance_match.group(1).replace(",", ""))
+
+        # Extract payments and credits
+        payments_match = re.search(r"Payments and Other Credits\s+-\$?([\d,]+\.\d{2})", text)
+        if payments_match:
+            statement_info["payments_and_credits"] = float(payments_match.group(1).replace(",", ""))
+
+        # Extract purchases and adjustments
+        purchases_match = re.search(r"Purchases and Adjustments\s+\$?([\d,]+\.\d{2})", text)
+        if purchases_match:
+            statement_info["purchases_and_adjustments"] = float(purchases_match.group(1).replace(",", ""))
+
+        return BankOfAmericaStatementInfo(**statement_info)
 
     def _extract_transaction_sections(self, text: str) -> dict:
         """Extract transaction sections from the statement text"""
@@ -184,7 +274,8 @@ class BankOfAmericaPdfReader(BaseFileReader):
                     continue
 
                 # Extract vendor from description
-                transaction_data["vendor"] = self._extract_vendor(transaction_data["description"])
+                # transaction_data["vendor"] = self._extract_vendor(transaction_data["description"])
+                transaction_data["vendor"] = description
 
                 transactions.append(transaction_data)
             else:
@@ -200,7 +291,7 @@ class BankOfAmericaPdfReader(BaseFileReader):
             # Handle different date formats
             if len(date_str) == 5:  # MM/DD format
                 # Assume current year if only month and day are provided
-                current_year = datetime.now().year
+                current_year = self.statement_info.closing_date.year
                 return datetime.strptime(f"{date_str}/{current_year}", "%m/%d/%Y").strftime("%Y-%m-%d")
             else:  # MM/DD/YY format
                 return datetime.strptime(date_str, "%m/%d/%y").strftime("%Y-%m-%d")
@@ -269,6 +360,7 @@ if __name__ == "__main__":
 
     if os.path.exists(sample_file):
         reader = BankOfAmericaPdfReader(sample_file)
+
         transactions = reader.read_transactions()
 
         print(f"Found {len(transactions)} transactions:")
@@ -296,6 +388,6 @@ if __name__ == "__main__":
 
         print("\nTop 5 expenses:")
         for expense in expenses[:5]:
-            print(f"{expense.date} - {expense.vendor}: ${expense.absolute_amount:.2f} ({expense.category})")
+            print(f"{expense.date} - {expense.vendor}: ${expense.absolute_amount:.2f}")
     else:
         print(f"Sample file not found: {sample_file}")

@@ -1,7 +1,7 @@
 """Main entry point for the expense analyzer"""
 
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from expense_analyzer.expense_analyzer import ExpenseAnalyzer
 
@@ -18,9 +18,8 @@ def main():
     analyzer.process_all_documents()
 
     # Generate and save current month's report
-    current_month = datetime.now().strftime("%Y-%m")
-    report = analyzer.generate_monthly_report(current_month)
-    analyzer.save_monthly_report(report, current_month)
+    report = analyzer.generate_expense_report()
+    analyzer.save_expense_report(report)
 
     # Print some summary information
     print(f"\nProcessed {len(analyzer.transactions)} total transactions")
