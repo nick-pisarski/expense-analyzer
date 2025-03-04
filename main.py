@@ -25,11 +25,6 @@ def main():
     print(f"\nProcessed {len(analyzer.transactions)} total transactions")
     print(f"Found {len([t for t in analyzer.transactions if t.is_expense])} expenses")
 
-    # Show top 5 expenses
-    print("\nTop 5 expenses:")
-    for expense in analyzer.get_top_expenses(limit=5):
-        print(f"{expense.date} - {expense.vendor}: ${expense.absolute_amount:.2f}")
-
 
 if __name__ == "__main__":
     main()

@@ -8,7 +8,7 @@ from collections import defaultdict
 
 from expense_analyzer.file_readers.boa_pdf_reader import BankOfAmericaPdfReader
 from expense_analyzer.models.transaction import Transaction
-from expense_analyzer.models.expense_report_data import ExpenseReportData
+from expense_analyzer.models.expense_report_data import ExpenseReportData, MarkdownExpenseReportGenerator
 
 
 class ExpenseAnalyzer:
@@ -132,7 +132,24 @@ class ExpenseAnalyzer:
             total_expenses=sum(t.amount for t in expenses),
             total_income=sum(t.amount for t in income),
             top_expenses=self.get_top_expenses(limit=5, start_date=start_date, end_date=end_date),
+            transactions=self.transactions,
+            amount_by_vendor=self._summarize_amounts_by_vendor(expenses),
         )
+
+    def _summarize_amounts_by_vendor(self, transactions: List[Transaction]) -> Dict[str, float]:
+        """Summarize total amounts by vendor
+
+        Args:
+            transactions (List[Transaction]): List of transactions to summarize
+
+        Returns:
+            Dict[str, float]: Total amount spent in each vendor
+        """
+
+        amount_by_vendor = defaultdict(float)
+        for transaction in transactions:
+            amount_by_vendor[transaction.vendor] += transaction.amount
+        return dict(amount_by_vendor)
 
     def _summarize_categories(self, transactions: List[Transaction]) -> Dict[str, float]:
         """Summarize total amounts by category
@@ -157,6 +174,6 @@ class ExpenseAnalyzer:
 
         report_file = self.output_dir / "reports" / f"{file_name}.md"
         with open(report_file, "w") as f:
-            f.write(report.to_markdown())
+            f.write(MarkdownExpenseReportGenerator(report).generate_report())
 
         self.logger.info(f"Saved monthly report to {report_file}")
