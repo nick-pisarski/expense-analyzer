@@ -30,3 +30,18 @@ Collect the above for the following:
     - PDF with graphs, etc
 - Implement Other File Readers
     - Bank Statements
+
+## Features
+
+### Transaction Categorization
+
+Coming Soon
+
+### Postgres SQL
+
+Transactions will be stored in a Postgres Database for easy query 
+
+- Must Check for duplicates in the database when inserting a record
+    - How to verify uniqueness? Date, Vendor, Amount?
+- Must a service class for interfacing with database
+- It should have the `pgvector` plugin for embeddings
