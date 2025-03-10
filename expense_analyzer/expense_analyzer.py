@@ -6,9 +6,9 @@ from typing import List, Dict, Optional
 from datetime import datetime
 from collections import defaultdict
 
-from expense_analyzer.file_readers.boa_pdf_reader import BankOfAmericaPdfReader
-from expense_analyzer.models.transaction import Transaction
-from expense_analyzer.models.expense_report_data import ExpenseReportData, MarkdownExpenseReportGenerator
+from expense_analyzer.file_readers import BankOfAmericaPdfReader
+from expense_analyzer.models import ExpenseReportData, Transaction
+from expense_analyzer.report_generators import MarkdownExpenseReportGenerator
 
 
 class ExpenseAnalyzer:
