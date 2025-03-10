@@ -8,13 +8,13 @@ from collections import defaultdict
 
 from expense_analyzer.file_readers import BankOfAmericaPdfReader
 from expense_analyzer.models import ExpenseReportData, Transaction
-from expense_analyzer.report_generators import MarkdownExpenseReportGenerator
+from expense_analyzer.report_generators import ExpenseReportGenerator
 
 
 class ExpenseAnalyzer:
     """Main controller class for analyzing expenses from various financial documents"""
 
-    def __init__(self, input_dir: str, output_dir: str):
+    def __init__(self, input_dir: str, output_dir: str, report_generator: ExpenseReportGenerator):
         """Initialize the ExpenseAnalyzer
 
         Args:
@@ -25,7 +25,7 @@ class ExpenseAnalyzer:
         self.output_dir = Path(output_dir)
         self.transactions: List[Transaction] = []
         self.logger = logging.getLogger(__name__)
-
+        self.report_generator = report_generator
         # Ensure directories exist
         self._setup_directories()
 
@@ -174,6 +174,6 @@ class ExpenseAnalyzer:
 
         report_file = self.output_dir / "reports" / f"{file_name}.md"
         with open(report_file, "w") as f:
-            f.write(MarkdownExpenseReportGenerator(report).generate_report())
+            f.write(self.report_generator.generate_report(report))
 
         self.logger.info(f"Saved monthly report to {report_file}")
