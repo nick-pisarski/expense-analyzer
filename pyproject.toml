@@ -17,6 +17,7 @@ pdfplumber = "^0.11.5"
 sqlalchemy = "^2.0"
 alembic = "^1.12"
 pgvector = "^0.2.0"  # Python client for pgvector
+python-dotenv = "^1.0.1"
 
 
 [tool.poetry.group.dev.dependencies]

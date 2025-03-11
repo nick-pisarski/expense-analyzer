@@ -11,16 +11,13 @@ import numpy as np
 from expense_analyzer.database.models import Transaction, Category
 from expense_analyzer.models.transaction import ReportTransaction
 
-# Configure logger
-logger = logging.getLogger(__name__)
-
 
 class TransactionRepository:
     """Repository for transaction data"""
 
     def __init__(self, db: Session):
         self.db = db
-        self.logger = logging.getLogger(f"{__name__}.TransactionRepository")
+        self.logger = logging.getLogger("expense_analyzer.database.TransactionRepository")
         self.logger.debug("TransactionRepository initialized")
 
     def create_transaction(self, transaction_data: dict) -> Optional[Transaction]:

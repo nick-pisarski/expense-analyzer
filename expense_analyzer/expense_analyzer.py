@@ -25,7 +25,7 @@ class ExpenseAnalyzer:
         self.input_dir = Path(input_dir)
         self.output_dir = Path(output_dir)
         self.transactions: List[ReportTransaction] = []
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger("expense_analyzer.expense_analyzer")
         self.report_generator = report_generator
         # Ensure directories exist
         self._setup_directories()

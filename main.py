@@ -1,10 +1,15 @@
 """Main entry point for the expense analyzer"""
 
+from dotenv import load_dotenv
 import logging
 from datetime import datetime, timedelta
 
 from expense_analyzer.expense_analyzer import ExpenseAnalyzer
 from expense_analyzer.report_generators import ConsoleExpenseReportGenerator, MarkdownExpenseReportGenerator
+from expense_analyzer.utils.logging_config import configure_logging
+
+load_dotenv()
+configure_logging()
 
 
 def main():

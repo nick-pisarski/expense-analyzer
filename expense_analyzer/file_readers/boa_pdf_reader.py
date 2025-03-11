@@ -47,7 +47,7 @@ class BankOfAmericaPdfReader(BaseFileReader):
     def __init__(self, file_path: str):
         super().__init__(file_path)
         self.transactions = []
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging.getLogger("expense_analyzer.file_readers.BankOfAmericaPdfReader")
 
     def read_statement_info(self) -> dict:
         """Read the PDF file and return a dictionary of statement information"""

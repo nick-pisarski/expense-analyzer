@@ -9,15 +9,13 @@ from expense_analyzer.database.connection import get_db
 from expense_analyzer.models.transaction import ReportTransaction
 from expense_analyzer.database.models import Transaction, Category
 
-logger = logging.getLogger(__name__)
-
 
 class ExpenseService:
     def __init__(self):
         self.db: Session = get_db()
         self.transaction_repository = TransactionRepository(self.db)
         self.category_repository = CategoryRepository(self.db)
-        self.logger = logging.getLogger("%s.ExpenseService" % __name__)
+        self.logger = logging.getLogger("expense_analyzer.services.ExpenseService")
         self.logger.debug("ExpenseService initialized")
 
         # TODO: Add logic to categorize transactions
