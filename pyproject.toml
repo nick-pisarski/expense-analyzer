@@ -14,6 +14,9 @@ pandas = "^2.0"
 openai = "^1.0"  # Replace with your actual LLM library
 matplotlib = "^3.7"
 pdfplumber = "^0.11.5"
+sqlalchemy = "^2.0"
+alembic = "^1.12"
+pgvector = "^0.2.0"  # Python client for pgvector
 
 
 [tool.poetry.group.dev.dependencies]
