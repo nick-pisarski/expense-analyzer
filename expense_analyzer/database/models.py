@@ -1,7 +1,7 @@
 """SQLAlchemy models for the expense analyzer"""
 
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey, Text, Enum, DateTime
+from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey, Text, Enum, DateTime, UniqueConstraint
 from sqlalchemy.orm import relationship
 from pgvector.sqlalchemy import Vector
 
@@ -27,12 +27,17 @@ class Transaction(Base):
     """Transaction model"""
 
     __tablename__ = "transactions"
+    __table_args__ = (
+        # Enforce uniqueness on date, amount, vendor, and description
+        # description can be NULL and still maintain uniqueness
+        UniqueConstraint("date", "amount", "vendor", "description", name="uix_transaction_unique"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     vendor = Column(String, index=True)
     amount = Column(Float, nullable=False)
     date = Column(Date, nullable=False)
-    description = Column(Text)
+    description = Column(Text, nullable=True)  # Explicitly mark as nullable
     source = Column(Enum(Source), default=Source.UNKNOWN)
     category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)

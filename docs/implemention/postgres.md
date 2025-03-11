@@ -413,14 +413,10 @@ And update `.env.example` as a reference:
 DATABASE_URL=postgresql://user:password@localhost:5432/dbname
 ```
 
-## 11. Create SQL Script for Inserting all the Category Data
-
-## 12. Update the Indexs for Transaction Table
-
-## 13. Write Unit Tests for 
 ## Next Steps
 
-1. Implement data migration from your current file-based system to the database
-2. Add unit tests for the database repositories
-3. Consider adding indexes to improve query performance
-4. Implement transaction categorization using pgvector for semantic similarity 
+1. ~~Implement data migration from your current file-based system to the database~~
+2. Create SQL Script to insert category data into database
+3. ~~Add unit tests for the database repositories~~
+4. Consider adding indexes to improve query performance
+5. Implement transaction categorization using pgvector for semantic similarity 
