@@ -8,7 +8,6 @@ class TransactionCategory(Enum):
     CHILDCARE = "Childcare"
     HEALTHCARE = "Healthcare"
     FOOD_AND_BEVERAGE = "Food and Beverage"
-
     ENTERTAINMENT = "Entertainment"
     HOUSING_MORTGAGE = "Housing (Mortgage and Taxes)"
     HOUSING_OTHER = "Housing Other (Utilities, repairs, etc.)"
@@ -74,10 +73,10 @@ class TransactionSubCategory(Enum):
     RETIREMENT_IRA_NICK = "Retirement (IRA) (Nick)"
     RETIREMENT_IRA_SYDNEY = "Retirement (IRA) (Sydney)"
     NON_RETIREMENT_ACCOUNT = "Non-Retirement Account"
-    ESPP = "ESPP"
+    ESPP = "Employee Stock Purchase Plan"
 
     # Other
-    MISCELLANEOUS = "Miscellaneous"
+    OTHER = "Other"
 
     @classmethod
     def get_all_categories(cls) -> List[str]:
@@ -124,7 +123,7 @@ TRANSACTION_SUBCATEGORY_TO_CATEGORY = {
     TransactionSubCategory.RETIREMENT_IRA_SYDNEY: TransactionCategory.SAVINGS_AND_INSURANCE,
     TransactionSubCategory.NON_RETIREMENT_ACCOUNT: TransactionCategory.SAVINGS_AND_INSURANCE,
     TransactionSubCategory.ESPP: TransactionCategory.SAVINGS_AND_INSURANCE,
-    TransactionSubCategory.MISCELLANEOUS: TransactionCategory.MISCELLANEOUS,
+    TransactionSubCategory.OTHER: TransactionCategory.MISCELLANEOUS,
 }
 
 
