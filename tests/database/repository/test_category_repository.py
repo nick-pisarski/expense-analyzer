@@ -3,6 +3,7 @@
 import unittest
 from unittest.mock import MagicMock
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 
 from expense_analyzer.database.models import Category
 from expense_analyzer.database.repository import CategoryRepository
@@ -47,6 +48,62 @@ class TestCategoryRepository(unittest.TestCase):
         self.mock_db.refresh.assert_called_once()
         self.assertEqual(result.name, category_name)
         self.assertEqual(result.parent_id, parent_id)
+
+    def test_create_duplicate_category_same_level(self):
+        """Test creating a duplicate category at the same level raises an IntegrityError."""
+        # Arrange
+        category_name = "Duplicate Category"
+        parent_id = None
+
+        # Mock the commit method to raise IntegrityError
+        self.mock_db.commit.side_effect = IntegrityError("Duplicate category", params=None, orig=None)
+
+        # Act & Assert
+        with self.assertRaises(IntegrityError):
+            self.repo.create_category(category_name, parent_id)
+
+        # Verify that rollback was called
+        self.mock_db.rollback.assert_called_once()
+
+    def test_create_duplicate_subcategory(self):
+        """Test creating a duplicate subcategory under the same parent raises an IntegrityError."""
+        # Arrange
+        category_name = "Duplicate Subcategory"
+        parent_id = 1
+
+        # Mock the commit method to raise IntegrityError
+        self.mock_db.commit.side_effect = IntegrityError("Duplicate subcategory", params=None, orig=None)
+
+        # Act & Assert
+        with self.assertRaises(IntegrityError):
+            self.repo.create_category(category_name, parent_id)
+
+        # Verify that rollback was called
+        self.mock_db.rollback.assert_called_once()
+
+    def test_create_same_category_name_different_parents(self):
+        """Test creating categories with the same name but under different parents."""
+        # Arrange
+        category_name = "Same Name Category"
+        parent_id_1 = 1
+        parent_id_2 = 2
+
+        # First call succeeds
+        result1 = self.repo.create_category(category_name, parent_id_1)
+
+        # Reset mock for second call
+        self.mock_db.reset_mock()
+
+        # Second call with different parent also succeeds
+        result2 = self.repo.create_category(category_name, parent_id_2)
+
+        # Assert
+        self.assertEqual(result1.name, category_name)
+        self.assertEqual(result1.parent_id, parent_id_1)
+        self.assertEqual(result2.name, category_name)
+        self.assertEqual(result2.parent_id, parent_id_2)
+        self.assertEqual(self.mock_db.add.call_count, 1)  # Called once for the second category
+        self.assertEqual(self.mock_db.commit.call_count, 1)  # Called once for the second category
 
     def test_get_category(self):
         """Test retrieving a category by ID."""

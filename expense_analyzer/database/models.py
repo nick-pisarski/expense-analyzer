@@ -13,9 +13,14 @@ class Category(Base):
     """Category model"""
 
     __tablename__ = "categories"
+    __table_args__ = (
+        # Enforce uniqueness on name and parent_id combination
+        # This allows the same category name under different parent categories
+        UniqueConstraint("name", "parent_id", name="uix_category_name_parent"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True, index=True)
+    name = Column(String, index=True)  # Removed unique=True as it's now part of the composite constraint
     parent_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
 
     # Relationships
