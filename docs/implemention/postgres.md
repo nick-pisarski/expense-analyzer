@@ -413,6 +413,11 @@ And update `.env.example` as a reference:
 DATABASE_URL=postgresql://user:password@localhost:5432/dbname
 ```
 
+## 11. Create SQL Script for Inserting all the Category Data
+
+## 12. Update the Indexs for Transaction Table
+
+## 13. Write Unit Tests for 
 ## Next Steps
 
 1. Implement data migration from your current file-based system to the database
