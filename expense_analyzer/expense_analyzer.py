@@ -70,6 +70,11 @@ class ExpenseAnalyzer:
                 self.logger.error(f"Error processing {pdf_file.name}: {e}")
         return transactions_found
 
+    def get_transactions(self) -> List[ReportTransaction]:
+        """Get all transactions"""
+        with ExpenseService() as expense_service:
+            return expense_service.get_all_transactions()
+
     def save_expense_report(self, report: ExpenseReportData, file_name: Optional[str] = None) -> None:
         """Save a monthly report to the output directory
 

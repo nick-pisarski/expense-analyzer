@@ -21,7 +21,7 @@ def main():
     analyzer.process_all_documents()
 
     # Get all transactions
-    transactions = analyzer.expense_service.get_all_transactions()
+    transactions = analyzer.get_transactions()
 
     # Generate and save current month's report
     # report = analyzer.generate_expense_report()

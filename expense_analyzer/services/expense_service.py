@@ -63,13 +63,9 @@ class ExpenseService:
         database_transactions: List[dict] = self._convert_report_transactions_to_database_transactions(transactions)
         success_count = 0
         for transaction in database_transactions:
-            try:
-                self.transaction_repository.create_transaction(transaction)
+            transaction = self.transaction_repository.create_transaction(transaction)
+            if transaction:
                 success_count += 1
-            except IntegrityError:
-                self.logger.warning(f"Transaction already exists: {transaction}")
-                self.logger.warning(f"Skipping transaction: {transaction}")
-                continue
         self.logger.debug(f"Successfully inserted {success_count} transactions")
 
     def get_transactions_by_date_range(self, start_date: datetime, end_date: datetime) -> List[ReportTransaction]:

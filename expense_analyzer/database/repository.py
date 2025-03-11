@@ -23,7 +23,7 @@ class TransactionRepository:
         self.logger = logging.getLogger(f"{__name__}.TransactionRepository")
         self.logger.debug("TransactionRepository initialized")
 
-    def create_transaction(self, transaction_data: dict) -> Transaction:
+    def create_transaction(self, transaction_data: dict) -> Optional[Transaction]:
         """Create a new transaction"""
         self.logger.info(
             f"Creating new transaction: {transaction_data.get('vendor')} - {transaction_data.get('amount')}"
@@ -39,19 +39,7 @@ class TransactionRepository:
         except IntegrityError:
             self.logger.warning(f"Integrity error when creating transaction, rolling back: {transaction_data}")
             self.db.rollback()
-            # If unique constraint violated, return the existing transaction
-            existing = (
-                self.db.query(Transaction)
-                .filter(
-                    Transaction.date == transaction_data["date"],
-                    Transaction.amount == transaction_data["amount"],
-                    Transaction.vendor == transaction_data["vendor"],
-                    Transaction.description == transaction_data.get("description"),
-                )
-                .first()
-            )
-            self.logger.info(f"Found existing transaction with ID: {existing.id if existing else None}")
-            return existing
+            return None
 
     def get_transaction_raw(self, transaction_id: int) -> Optional[Transaction]:
         """Get a transaction by ID"""
