@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: ankane/pgvector:latest
+    environment:
+      POSTGRES_USER: expense_analyzer_user
+      POSTGRES_PASSWORD: secure_password_123
+      POSTGRES_DB: expense_analyzer_db
+      # This environment variable ensures pgvector is enabled
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Mount an initialization script to enable the extension
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+
+volumes:
+  postgres_data: 
