@@ -21,8 +21,10 @@ Base = declarative_base()
 
 def get_db():
     """Get database session"""
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
+    return SessionLocal()
+
+
+def close_db(db):
+    """Close database session"""
+    if db:
         db.close()

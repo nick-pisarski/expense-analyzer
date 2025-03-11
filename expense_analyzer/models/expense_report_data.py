@@ -1,7 +1,7 @@
 from typing import List, Dict
 from datetime import datetime
 
-from expense_analyzer.models.transaction import Transaction
+from expense_analyzer.models.transaction import ReportTransaction
 from dataclasses import dataclass
 
 
@@ -14,6 +14,6 @@ class ExpenseReportData:
     total_transactions: int
     total_expenses: float
     total_income: float
-    top_expenses: List[Transaction]
-    transactions: List[Transaction]
+    top_expenses: List[ReportTransaction]
+    transactions: List[ReportTransaction]
     amount_by_vendor: Dict[str, float]

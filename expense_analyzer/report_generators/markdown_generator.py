@@ -1,6 +1,6 @@
 from typing import List, Dict
 from expense_analyzer.models.expense_report_data import ExpenseReportData
-from expense_analyzer.models.transaction import Transaction
+from expense_analyzer.models.transaction import ReportTransaction
 from expense_analyzer.report_generators.base_generator import ExpenseReportGenerator
 
 
@@ -32,7 +32,7 @@ class MarkdownExpenseReportGenerator(ExpenseReportGenerator):
 
 """
 
-    def _generate_transaction_table(self, transactions: List[Transaction], title: str) -> str:
+    def _generate_transaction_table(self, transactions: List[ReportTransaction], title: str) -> str:
         """Generate a markdown table of transactions"""
         md = f"## {title}\n"
         md += "| Date | Description | Amount |\n"

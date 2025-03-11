@@ -1,8 +1,8 @@
-from expense_analyzer.models.transaction import Transaction
+from expense_analyzer.models.transaction import ReportTransaction
 from expense_analyzer.models.source import Source
 
 
-class BankOfAmericaTransaction(Transaction):
+class BankOfAmericaTransaction(ReportTransaction):
     """A transaction from Bank of America"""
 
     def __init__(self, data: dict):

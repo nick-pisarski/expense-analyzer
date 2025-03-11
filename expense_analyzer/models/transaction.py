@@ -3,7 +3,7 @@ from datetime import datetime
 from expense_analyzer.models.source import Source
 
 
-class Transaction:
+class ReportTransaction:
     """Class for all transactions"""
 
     def __init__(self, data: dict):

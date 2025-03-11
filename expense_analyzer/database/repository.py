@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 import numpy as np
 
 from expense_analyzer.database.models import Transaction, Category
+from expense_analyzer.models.transaction import ReportTransaction
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -52,22 +53,63 @@ class TransactionRepository:
             self.logger.info(f"Found existing transaction with ID: {existing.id if existing else None}")
             return existing
 
-    def get_transaction(self, transaction_id: int) -> Optional[Transaction]:
+    def get_transaction_raw(self, transaction_id: int) -> Optional[Transaction]:
         """Get a transaction by ID"""
         self.logger.debug(f"Getting transaction with ID: {transaction_id}")
-        transaction = self.db.query(Transaction).filter(Transaction.id == transaction_id).first()
-        if transaction:
-            self.logger.debug(f"Found transaction: {transaction.id}")
-        else:
-            self.logger.debug(f"No transaction found with ID: {transaction_id}")
-        return transaction
+        return self.db.query(Transaction).filter(Transaction.id == transaction_id).first()
 
-    def get_all_transactions(self) -> List[Transaction]:
+    def get_transaction(self, transaction_id: int) -> Optional[ReportTransaction]:
+        """Get a transaction by ID and convert to ReportTransaction"""
+        self.logger.debug("Getting transaction with ID: %d", transaction_id)
+
+        # Join with Category if there's a category_id
+        transaction = self.db.query(Transaction).outerjoin(Category).filter(Transaction.id == transaction_id).first()
+
+        if not transaction:
+            self.logger.debug("No transaction found with ID: %d", transaction_id)
+            return None
+
+        self.logger.debug("Found transaction: %d", transaction.id)
+
+        return ReportTransaction(
+            {
+                "id": transaction.id,
+                "vendor": transaction.vendor,
+                "amount": transaction.amount,
+                "date": transaction.date,
+                "description": transaction.description,
+                "source": transaction.source,
+                "category": transaction.category.name if transaction.category else None,
+            }
+        )
+
+    def get_all_transactions_raw(self) -> List[Transaction]:
         """Get all transactions"""
         self.logger.debug("Getting all transactions")
         transactions = self.db.query(Transaction).all()
         self.logger.debug(f"Retrieved {len(transactions)} transactions")
         return transactions
+
+    def get_all_transactions(self) -> List[ReportTransaction]:
+        """Get all transactions"""
+        self.logger.debug("Getting all transactions")
+        transactions = self.db.query(Transaction).outerjoin(Category).all()
+        report_transactions = [
+            ReportTransaction(
+                {
+                    "id": t.id,
+                    "vendor": t.vendor,
+                    "amount": t.amount,
+                    "date": t.date,
+                    "description": t.description,
+                    "source": t.source,
+                    "category": t.category.name if t.category else None,
+                }
+            )
+            for t in transactions
+        ]
+        self.logger.debug(f"Retrieved {len(transactions)} transactions")
+        return report_transactions
 
     def get_transactions_by_date_range(self, start_date: datetime, end_date: datetime) -> List[Transaction]:
         """Get transactions within a date range"""
