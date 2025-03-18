@@ -54,7 +54,7 @@ class ExpenseService:
             database_transactions.append(database_transaction)
         return database_transactions
 
-    def insert_transactions(self, transactions: List[ReportTransaction]):
+    def insert_transactions(self, transactions: List[ReportTransaction]) -> int:
         """Insert transactions into the database"""
         self.logger.debug(f"Inserting {len(transactions)} transactions into the database")
         # Insert transactions into the database
@@ -65,6 +65,7 @@ class ExpenseService:
             if transaction:
                 success_count += 1
         self.logger.debug(f"Successfully inserted {success_count} transactions")
+        return success_count
 
     def get_transactions_by_date_range(self, start_date: datetime, end_date: datetime) -> List[ReportTransaction]:
         """Get transactions from the database"""

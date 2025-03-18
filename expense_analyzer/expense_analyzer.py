@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 from datetime import datetime
 from collections import defaultdict
 
@@ -10,6 +10,33 @@ from expense_analyzer.file_readers import BankOfAmericaPdfReader
 from expense_analyzer.models import ExpenseReportData, ReportTransaction
 from expense_analyzer.report_generators import ExpenseReportGenerator
 from expense_analyzer.services.expense_service import ExpenseService
+
+
+class ProcessDocumentsResult:
+    """Result of processing documents"""
+
+    def __init__(
+        self,
+        transactions_found: List[ReportTransaction],
+        files_processed: int,
+        transactions_inserted: int,
+        success: bool,
+    ):
+        self.transactions_found = transactions_found
+        self.files_processed = files_processed
+        self.transactions_inserted = transactions_inserted
+        self.success = success
+
+    def __str__(self) -> str:
+        return (
+            f"Documents processed: {self.files_processed}\n"
+            f"Transactions found: {len(self.transactions_found)}\n"
+            f"New transactions inserted: {self.transactions_inserted}\n"
+            f"Successful: {self.success}"
+        )
+
+    def __repr__(self) -> str:
+        return f"ProcessDocumentsResult(transactions_found={self.transactions_found}, files_processed={self.files_processed}, transactions_inserted={self.transactions_inserted}, success={self.success})"
 
 
 class ExpenseAnalyzer:
@@ -39,28 +66,45 @@ class ExpenseAnalyzer:
         (self.input_dir / "bank_of_america").mkdir(exist_ok=True)
         (self.output_dir / "reports").mkdir(exist_ok=True)
 
-    def process_all_documents(self) -> None:
+    def process_all_documents(self) -> ProcessDocumentsResult:
         """Process all documents in the input directory"""
         self.logger.info("Starting to process all documents")
 
-        # Process Bank of America documents
-        transactions_found = self._process_boa_documents()
+        transactions_found_in_docs = 0
+        files_processed = 0
+        transactions_inserted = 0
 
-        # Insert transactions into the database
-        with ExpenseService() as expense_service:
-            expense_service.insert_transactions(transactions_found)
+        # Process Bank of America documents
+        transactions_found, files_processed = self._process_boa_documents()
+        transactions_found_in_docs += len(transactions_found)
+        files_processed += files_processed
 
         # TODO: Add processing for other banks/sources as needed
 
-    def _process_boa_documents(self) -> List[ReportTransaction]:
+        # Insert transactions into the database
+        with ExpenseService() as expense_service:
+            transactions_inserted = expense_service.insert_transactions(transactions_found)
+
+        return ProcessDocumentsResult(
+            transactions_found=transactions_found,
+            files_processed=files_processed,
+            transactions_inserted=transactions_inserted,
+            success=True,
+        )
+
+    def _process_boa_documents(self) -> Tuple[List[ReportTransaction], int]:
         """Process all Bank of America PDF statements"""
         boa_dir = self.input_dir / "bank_of_america"
         if not boa_dir.exists():
             self.logger.warning(f"Bank of America directory not found: {boa_dir}")
             return
+        files_found = list(boa_dir.glob("*.pdf"))
+        if not files_found:
+            self.logger.warning(f"No Bank of America PDF files found in {boa_dir}")
+            return [], 0
 
         transactions_found = []
-        for pdf_file in list(boa_dir.glob("*.pdf")):
+        for pdf_file in files_found:
             try:
                 reader = BankOfAmericaPdfReader(str(pdf_file))
                 transactions = reader.read_transactions()
@@ -68,12 +112,7 @@ class ExpenseAnalyzer:
                 self.logger.info(f"Processed {len(transactions)} transactions from {pdf_file.name}")
             except Exception as e:
                 self.logger.error(f"Error processing {pdf_file.name}: {e}")
-        return transactions_found
-
-    def get_transactions(self) -> List[ReportTransaction]:
-        """Get all transactions"""
-        with ExpenseService() as expense_service:
-            return expense_service.get_all_transactions()
+        return transactions_found, len(files_found)
 
     def save_expense_report(self, report: ExpenseReportData, file_name: Optional[str] = None) -> None:
         """Save a monthly report to the output directory

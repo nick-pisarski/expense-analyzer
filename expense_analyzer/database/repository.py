@@ -34,7 +34,10 @@ class TransactionRepository:
             self.logger.debug(f"Transaction created successfully with ID: {transaction.id}")
             return transaction
         except IntegrityError:
-            self.logger.warning(f"Integrity error when creating transaction, rolling back: {transaction_data}")
+            self.logger.warning(
+                f"Duplicate transaction found for {transaction_data.get('vendor')} - {transaction_data.get('amount')}"
+            )
+            self.logger.debug(f"Integrity error when creating transaction, rolling back: {transaction_data}")
             self.db.rollback()
             return None
 

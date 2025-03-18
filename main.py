@@ -23,22 +23,9 @@ def main():
     )
 
     # Process all documents
-    analyzer.process_all_documents()
+    results = analyzer.process_all_documents()
 
-    # Get all transactions
-    transactions = analyzer.get_transactions()
-
-    # Generate and save current month's report
-    # report = analyzer.generate_expense_report()
-    # analyzer.save_expense_report(report)
-
-    # Print some summary information
-    print(f"\nProcessed {len(transactions)} total transactions")
-    print(f"Found {len([t for t in transactions if t.is_expense])} expenses")
-
-    # Print first 5 transactions
-    for t in transactions[:5]:
-        print(t)
+    print(results)
 
 
 if __name__ == "__main__":
