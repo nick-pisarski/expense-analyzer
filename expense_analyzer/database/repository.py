@@ -3,7 +3,7 @@
 from typing import List, Optional, Dict
 from datetime import datetime
 import logging
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 import numpy as np
@@ -41,63 +41,17 @@ class TransactionRepository:
             self.db.rollback()
             return None
 
-    def get_transaction_raw(self, transaction_id: int) -> Optional[Transaction]:
+    def get_transaction(self, transaction_id: int) -> Optional[Transaction]:
         """Get a transaction by ID"""
         self.logger.debug(f"Getting transaction with ID: {transaction_id}")
         return self.db.query(Transaction).filter(Transaction.id == transaction_id).first()
 
-    def get_transaction(self, transaction_id: int) -> Optional[ReportTransaction]:
-        """Get a transaction by ID and convert to ReportTransaction"""
-        self.logger.debug("Getting transaction with ID: %d", transaction_id)
-
-        # Join with Category if there's a category_id
-        transaction = self.db.query(Transaction).outerjoin(Category).filter(Transaction.id == transaction_id).first()
-
-        if not transaction:
-            self.logger.debug("No transaction found with ID: %d", transaction_id)
-            return None
-
-        self.logger.debug("Found transaction: %d", transaction.id)
-
-        return ReportTransaction(
-            {
-                "id": transaction.id,
-                "vendor": transaction.vendor,
-                "amount": transaction.amount,
-                "date": transaction.date,
-                "description": transaction.description,
-                "source": transaction.source,
-                "category": transaction.category.name if transaction.category else None,
-            }
-        )
-
-    def get_all_transactions_raw(self) -> List[Transaction]:
+    def get_all_transactions(self) -> List[Transaction]:
         """Get all transactions"""
         self.logger.debug("Getting all transactions")
         transactions = self.db.query(Transaction).all()
         self.logger.debug(f"Retrieved {len(transactions)} transactions")
         return transactions
-
-    def get_all_transactions(self) -> List[ReportTransaction]:
-        """Get all transactions"""
-        self.logger.debug("Getting all transactions")
-        transactions = self.db.query(Transaction).outerjoin(Category).all()
-        report_transactions = [
-            ReportTransaction(
-                {
-                    "id": t.id,
-                    "vendor": t.vendor,
-                    "amount": t.amount,
-                    "date": t.date,
-                    "description": t.description,
-                    "source": t.source,
-                    "category": t.category.name if t.category else None,
-                }
-            )
-            for t in transactions
-        ]
-        self.logger.debug(f"Retrieved {len(transactions)} transactions")
-        return report_transactions
 
     def get_transactions_by_date_range(self, start_date: datetime, end_date: datetime) -> List[Transaction]:
         """Get transactions within a date range"""
@@ -256,3 +210,62 @@ class CategoryRepository:
         categories = self.db.query(Category).filter(Category.parent_id == parent_id).all()
         self.logger.debug(f"Retrieved {len(categories)} subcategories for parent ID: {parent_id}")
         return categories
+
+
+class TransactionCategoryRepository:
+    """Repository for getting transactions with categories"""
+
+    def __init__(self, db: Session):
+        self.db = db
+        self.logger = logging.getLogger(f"{__name__}.TransactionCategoryRepository")
+        self.logger.debug("TransactionCategoryRepository initialized")
+
+    def get_transactions(self) -> List[Transaction]:
+        """Get all transactions with categories"""
+        self.logger.debug("Getting all transactions with categories")
+        transactions = self.db.query(Transaction).options(joinedload(Transaction.category)).all()
+        return transactions
+
+    def get_transaction(self, transaction_id: int) -> Optional[Transaction]:
+        """Get a transaction with a specific category"""
+        self.logger.debug(f"Getting transaction with ID: {transaction_id}")
+        transaction = (
+            self.db.query(Transaction)
+            .options(joinedload(Transaction.category))
+            .filter(Transaction.id == transaction_id)
+            .first()
+        )
+        return transaction
+
+    def get_transactions_by_date_range(self, start_date: datetime, end_date: datetime) -> List[Transaction]:
+        """Get all transactions within a date range"""
+        self.logger.debug(f"Getting all transactions between {start_date} and {end_date}")
+        transactions = (
+            self.db.query(Transaction)
+            .options(joinedload(Transaction.category))
+            .filter(Transaction.date >= start_date, Transaction.date <= end_date)
+            .all()
+        )
+        return transactions
+
+    def get_transactions_by_category(self, category_id: int) -> List[Transaction]:
+        """Get all transactions with a specific category"""
+        self.logger.debug(f"Getting all transactions with category ID: {category_id}")
+        transactions = (
+            self.db.query(Transaction)
+            .options(joinedload(Transaction.category))
+            .filter(Category.id == category_id)
+            .all()
+        )
+        return transactions
+
+    def get_transactions_by_category_name(self, category_name: str) -> List[Transaction]:
+        """Get all transactions with a specific category by name"""
+        self.logger.debug(f"Getting all transactions with category name: {category_name}")
+        transactions = (
+            self.db.query(Transaction)
+            .options(joinedload(Transaction.category))
+            .filter(Category.name == category_name)
+            .all()
+        )
+        return transactions

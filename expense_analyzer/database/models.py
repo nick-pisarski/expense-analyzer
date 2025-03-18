@@ -68,3 +68,9 @@ class Transaction(Base):
     def absolute_amount(self):
         """Get the absolute amount of the transaction"""
         return abs(self.amount)
+
+    def __repr__(self):
+        return f"<Transaction(id={self.id}, vendor={self.vendor}, amount={self.amount}, date={self.date}, description={self.description}, source={self.source}, category_id={self.category_id})>"
+
+    def __str__(self):
+        return f"Transaction(id={self.id}, vendor={self.vendor}, amount={self.amount}, date={self.date}, description={self.description}, source={self.source}, category_id={self.category_id})"

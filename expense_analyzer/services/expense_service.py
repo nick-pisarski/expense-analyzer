@@ -4,7 +4,11 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
-from expense_analyzer.database.repository import TransactionRepository, CategoryRepository
+from expense_analyzer.database.repository import (
+    TransactionRepository,
+    CategoryRepository,
+    TransactionCategoryRepository,
+)
 from expense_analyzer.database.connection import get_db
 from expense_analyzer.models.transaction import ReportTransaction
 from expense_analyzer.database.models import Transaction, Category
@@ -15,6 +19,7 @@ class ExpenseService:
         self.db: Session = get_db()
         self.transaction_repository = TransactionRepository(self.db)
         self.category_repository = CategoryRepository(self.db)
+        self.transaction_category_repository = TransactionCategoryRepository(self.db)
         self.logger = logging.getLogger("expense_analyzer.services.ExpenseService")
         self.logger.debug("ExpenseService initialized")
 
@@ -67,9 +72,10 @@ class ExpenseService:
         self.logger.debug(f"Successfully inserted {success_count} transactions")
         return success_count
 
-    def get_transactions_by_date_range(self, start_date: datetime, end_date: datetime) -> List[ReportTransaction]:
+    def get_transactions_by_date_range(self, start_date: datetime, end_date: datetime) -> List[Transaction]:
         """Get transactions from the database"""
-        return self.transaction_repository.get_transactions_by_date_range(start_date, end_date)
+        transactions = self.transaction_category_repository.get_transactions_by_date_range(start_date, end_date)
+        return transactions
 
     def get_all_transactions(self) -> List[ReportTransaction]:
         """Get all transactions"""
