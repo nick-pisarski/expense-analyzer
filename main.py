@@ -11,9 +11,13 @@ from expense_analyzer.utils.logging_config import configure_logging
 load_dotenv()
 configure_logging()
 
+
 def print_transaction(transaction: Transaction):
     space = 40
-    print(f"{transaction.date} | {transaction.vendor[:space]:<{space}} | ${transaction.absolute_amount:>7.2f} | {transaction.category.name if transaction.category else 'Uncategorized'}")
+    print(
+        f"{transaction.date} | {transaction.vendor[:space]:<{space}} | ${transaction.absolute_amount:>7.2f} | {transaction.category.name if transaction.category else 'Uncategorized'}"
+    )
+
 
 def similar_transaction():
     # Get transaction 1772
@@ -31,6 +35,7 @@ def similar_transaction():
     for transaction in similar_transactions:
         print_transaction(transaction)
 
+
 def use_service_to_get_transactions():
     # Using the ExpenseService to get transactions by date range
     results = []
@@ -39,6 +44,7 @@ def use_service_to_get_transactions():
     print(f"Found {len(results)} transactions")
     for result in results:
         print_transaction(result)
+
 
 def categorize_transactions():
     transaction_id = 1723
@@ -55,6 +61,7 @@ def categorize_transactions():
     print("Category:")
     print(category.name)
 
+
 def main():
     """Main entry point for the expense analyzer"""
     # Configure logging
@@ -62,16 +69,15 @@ def main():
 
     # Example usage
     # analyzer = ExpenseAnalyzer(
-        # input_dir="input", output_dir="output", report_generator=MarkdownExpenseReportGenerator()
+    # input_dir="input", output_dir="output", report_generator=MarkdownExpenseReportGenerator()
     # )
     # analyzer.categorize_transactions_without_category()
 
     # Process all documents
     # results = analyzer.process_all_documents()
 
-    # transactions by date range 
+    # transactions by date range
     # use_service_to_get_transactions()
-
 
     # Test the similarity of transactions
     # similar_transaction()
@@ -86,6 +92,7 @@ def main():
         print(item)
     for vendor in report.top_five_vendors:
         print(vendor)
+
 
 if __name__ == "__main__":
     main()

@@ -11,6 +11,7 @@ from dataclasses import dataclass
 
 from expense_analyzer.database.models import Transaction, Category, TransactionView, VendorSummary
 
+
 class TransactionRepository:
     """Repository for transaction data"""
 
@@ -188,7 +189,7 @@ class TransactionCategoryRepository:
             .all()
         )
         return transactions
-    
+
     def get_transactions_by_date_range(self, start_date: datetime, end_date: datetime) -> List[Transaction]:
         """Get all transactions within a date range"""
         self.logger.debug(f"Getting all transactions between {start_date} and {end_date}")
@@ -251,7 +252,6 @@ class TransactionCategoryRepository:
         return transactions
 
 
-
 class TransactionViewRepository:
     """Repository for getting transactions with views"""
 
@@ -269,17 +269,23 @@ class TransactionViewRepository:
     def get_top_expenses(self, limit: int = 5) -> List[TransactionView]:
         """Get the top expenses"""
         self.logger.debug(f"Getting the top {limit} expenses")
-        transaction_views = self.db.query(TransactionView).where(TransactionView.amount < 0).order_by(TransactionView.amount.asc()).limit(limit).all()
+        transaction_views = (
+            self.db.query(TransactionView)
+            .where(TransactionView.amount < 0)
+            .order_by(TransactionView.amount.asc())
+            .limit(limit)
+            .all()
+        )
         return transaction_views
-    
+
     def get_top_vendors(self, limit: int = 5) -> List[VendorSummary]:
         """Get the top vendors with the most expenses (negative transactions)"""
         self.logger.debug(f"Getting the top {limit} vendors by expense amount")
         results = (
             self.db.query(
                 TransactionView.vendor,
-                func.count(TransactionView.id).label('transaction_count'),
-                func.sum(TransactionView.amount).label('total_amount')
+                func.count(TransactionView.id).label("transaction_count"),
+                func.sum(TransactionView.amount).label("total_amount"),
             )
             .filter(TransactionView.amount < 0)  # Only get expenses (negative amounts)
             .group_by(TransactionView.vendor)
@@ -288,5 +294,3 @@ class TransactionViewRepository:
             .all()
         )
         return [VendorSummary(vendor=r[0], count=r[1], total_amount=abs(r[2])) for r in results]
-        
-    

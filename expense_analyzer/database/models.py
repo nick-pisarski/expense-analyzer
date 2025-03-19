@@ -76,13 +76,15 @@ class Transaction(Base):
     def __str__(self):
         return f"Transaction(id={self.id}, vendor={self.vendor}, amount={self.amount}, date={self.date}, description={self.description}, source={self.source}, category_id={self.category_id})"
 
+
 class TransactionView(Base):
     """Transaction view model"""
+
     __tablename__ = "transaction_with_category_view"
 
     # Make it clear this is a view by adding mapper args
     __mapper_args__ = {
-        'primary_key': ['id'],  # Specify primary key as a list of column names
+        "primary_key": ["id"],  # Specify primary key as a list of column names
     }
     id = Column(Integer, primary_key=True)  # Remove index=True as it's not needed for views
     vendor = Column(String)
@@ -98,9 +100,9 @@ class TransactionView(Base):
     def __repr__(self):
         return f"TransactionView(id={self.id}, vendor={self.vendor}, amount={self.amount}, date={self.date}, category_name={self.category_name}, parent_category_name={self.parent_category_name})"
 
+
 @dataclass
 class VendorSummary:
-
     vendor: str
     count: int
     total_amount: float

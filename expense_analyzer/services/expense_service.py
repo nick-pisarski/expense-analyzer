@@ -14,6 +14,7 @@ from expense_analyzer.database.models import Transaction, Category
 from expense_analyzer.embedder.transaction_embedder import TransactionEmbedder
 from expense_analyzer.categorizers import SimpleCategorizer
 
+
 class ExpenseService:
     """Service for managing expense data"""
 
@@ -108,7 +109,7 @@ class ExpenseService:
         for transaction, embedding in zip(transactions, embeddings):
             transaction.embedding = embedding
             self.transaction_repository.update_transaction(transaction)
-    
+
     def find_similar_transactions(self, transaction: Transaction, limit: int = 5) -> List[Transaction]:
         """Find similar transactions"""
         embedding = transaction.embedding
@@ -131,7 +132,9 @@ class ExpenseService:
 
                 self.transaction_repository.update_transaction(transaction)
 
-    def _get_category_for_transaction(self, transaction: Transaction, sub_categories: List[Category]) -> Category | None:
+    def _get_category_for_transaction(
+        self, transaction: Transaction, sub_categories: List[Category]
+    ) -> Category | None:
         """Get a category for a transaction"""
 
         # Search for similar transactions

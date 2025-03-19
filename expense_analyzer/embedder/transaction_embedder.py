@@ -1,7 +1,7 @@
-
 from typing import List
 from expense_analyzer.database.models import Transaction
 from openai import OpenAI
+
 
 class TransactionEmbedder:
     """Embedder for transactions"""
@@ -26,10 +26,10 @@ class TransactionEmbedder:
 
     def embed_transaction(self, transaction: Transaction) -> List[float]:
         """Embed a transaction into a vector embedding.
-        
+
         Args:
             transaction: The transaction to embed
-            
+
         Returns:
             A list of floats representing the embedding vector
         """
@@ -38,10 +38,10 @@ class TransactionEmbedder:
 
     def embed_transactions(self, transactions: List[Transaction]) -> List[List[float]]:
         """Embed a batch of transactions into a list of vector embeddings.
-        
+
         Args:
             transactions: List of transactions to embed
-            
+
         Returns:
             List of embedding vectors, one for each input transaction
         """
@@ -50,30 +50,24 @@ class TransactionEmbedder:
 
     def _embed_text(self, text: str) -> List[float]:
         """Embed a text string into a vector embedding.
-        
+
         Args:
             text: The text to embed
-            
+
         Returns:
             A list of floats representing the embedding vector
         """
-        response = self.client.embeddings.create(
-            model=self.model,
-            input=text
-        )
+        response = self.client.embeddings.create(model=self.model, input=text)
         return response.data[0].embedding
 
     def _embed_batch(self, texts: List[str]) -> List[List[float]]:
         """Embed a batch of text strings into a list of vector embeddings.
-        
+
         Args:
             texts: List of text strings to embed
-            
+
         Returns:
             List of embedding vectors, one for each input text
         """
-        response = self.client.embeddings.create(
-            model=self.model,
-            input=texts
-        )
+        response = self.client.embeddings.create(model=self.model, input=texts)
         return [embedding.embedding for embedding in response.data]

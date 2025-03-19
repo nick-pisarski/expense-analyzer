@@ -121,7 +121,7 @@ class ExpenseAnalyzer:
         raise NotImplementedError("Report generation not implemented")
 
     def categorize_transactions_without_category(self) -> None:
-        """Categorize transactions. Looks for all transactions in the database that do not have a category 
+        """Categorize transactions. Looks for all transactions in the database that do not have a category
         and categorizes them, then re-embeds them."""
 
         # TODO: This function should not be in the ExpenseAnalyzer class. It should be in the ExpenseService class.
