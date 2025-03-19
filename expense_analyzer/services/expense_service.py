@@ -2,7 +2,6 @@ from typing import List
 import logging
 from datetime import datetime
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError
 
 from expense_analyzer.database.repository import (
     TransactionRepository,
@@ -12,9 +11,11 @@ from expense_analyzer.database.repository import (
 from expense_analyzer.database.connection import get_db
 from expense_analyzer.models.transaction import ReportTransaction
 from expense_analyzer.database.models import Transaction, Category
-
+from expense_analyzer.embedder.transaction_embedder import TransactionEmbedder
 
 class ExpenseService:
+    """Service for managing expense data"""
+
     def __init__(self):
         self.db: Session = get_db()
         self.transaction_repository = TransactionRepository(self.db)
@@ -22,6 +23,7 @@ class ExpenseService:
         self.transaction_category_repository = TransactionCategoryRepository(self.db)
         self.logger = logging.getLogger("expense_analyzer.services.ExpenseService")
         self.logger.debug("ExpenseService initialized")
+        self.embedder = TransactionEmbedder()
 
         # TODO: Add logic to categorize transactions
         # self.categorizer = Categorizer()
@@ -83,6 +85,26 @@ class ExpenseService:
     def get_transactions_without_category(self) -> List[Transaction]:
         """Get all transactions without a category"""
         return self.transaction_repository.get_transactions_without_category()
+
+    def get_transactions_with_category(self) -> List[Transaction]:
+        """Get all transactions with a category"""
+        return self.transaction_category_repository.get_transactions_with_category()
+
+    def embed_transactions(self) -> None:
+        """Embeds valid transaction, ie they have category"""
+        transactions = self.get_transactions_with_category()
+        embeddings = self.embedder.embed_transactions(transactions)
+        for transaction, embedding in zip(transactions, embeddings):
+            transaction.embedding = embedding
+            self.transaction_repository.update_transaction(transaction)
+    
+    def find_similar_transactions(self, transaction: Transaction, limit: int = 5) -> List[Transaction]:
+        """Find similar transactions"""
+        embedding = transaction.embedding
+        if embedding is None:
+            self.logger.warning("Transaction has no embedding")
+            embedding = self.embedder.embed_transaction(transaction)
+        return self.transaction_category_repository.find_similar_transactions(embedding, limit)
 
     def categorize_transactions(self, transactions: List[Transaction]) -> None:
         """Categorize transactions"""
