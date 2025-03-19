@@ -4,11 +4,12 @@ from typing import List, Optional, Dict
 from datetime import datetime
 import logging
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func
+from sqlalchemy import func, text
 from sqlalchemy.exc import IntegrityError
 import numpy as np
+from dataclasses import dataclass
 
-from expense_analyzer.database.models import Transaction, Category
+from expense_analyzer.database.models import Transaction, Category, TransactionView, VendorSummary
 
 class TransactionRepository:
     """Repository for transaction data"""
@@ -78,38 +79,6 @@ class TransactionRepository:
         )
         self.logger.debug(f"Retrieved {len(transactions)} transactions in date range")
         return transactions
-
-    def get_top_expenses(
-        self, limit: int = 10, start_date: Optional[datetime] = None, end_date: Optional[datetime] = None
-    ) -> List[Transaction]:
-        """Get top expenses within an optional date range"""
-        self.logger.debug(f"Getting top {limit} expenses between {start_date or 'any'} and {end_date or 'any'}")
-        query = self.db.query(Transaction).filter(Transaction.amount < 0)
-
-        if start_date:
-            query = query.filter(Transaction.date >= start_date)
-        if end_date:
-            query = query.filter(Transaction.date <= end_date)
-
-        transactions = query.order_by(Transaction.amount).limit(limit).all()
-        self.logger.debug(f"Retrieved {len(transactions)} top expenses")
-        return transactions
-
-    def summarize_by_vendor(self, start_date: datetime, end_date: datetime) -> Dict[str, float]:
-        """Summarize expenses by vendor"""
-        self.logger.debug(f"Summarizing expenses by vendor between {start_date} and {end_date}")
-        results = (
-            self.db.query(Transaction.vendor, func.sum(Transaction.amount).label("total"))
-            .filter(Transaction.date >= start_date, Transaction.date <= end_date, Transaction.amount < 0)
-            .group_by(Transaction.vendor)
-            .all()
-        )
-
-        summary = {vendor: abs(total) for vendor, total in results}
-        self.logger.debug(f"Generated summary for {len(summary)} vendors")
-        return summary
-
-
 
 
 class CategoryRepository:
@@ -280,3 +249,44 @@ class TransactionCategoryRepository:
         )
         self.logger.debug(f"Found {len(transactions)} similar transactions")
         return transactions
+
+
+
+class TransactionViewRepository:
+    """Repository for getting transactions with views"""
+
+    def __init__(self, db: Session):
+        self.db = db
+        self.logger = logging.getLogger(f"{__name__}.TransactionViewRepository")
+        self.logger.debug("TransactionViewRepository initialized")
+
+    def get_transaction_views(self) -> List[TransactionView]:
+        """Get all transaction views"""
+        self.logger.debug("Getting all transaction views")
+        transaction_views = self.db.query(TransactionView).all()
+        return transaction_views
+
+    def get_top_expenses(self, limit: int = 5) -> List[TransactionView]:
+        """Get the top expenses"""
+        self.logger.debug(f"Getting the top {limit} expenses")
+        transaction_views = self.db.query(TransactionView).where(TransactionView.amount < 0).order_by(TransactionView.amount.asc()).limit(limit).all()
+        return transaction_views
+    
+    def get_top_vendors(self, limit: int = 5) -> List[VendorSummary]:
+        """Get the top vendors with the most expenses (negative transactions)"""
+        self.logger.debug(f"Getting the top {limit} vendors by expense amount")
+        results = (
+            self.db.query(
+                TransactionView.vendor,
+                func.count(TransactionView.id).label('transaction_count'),
+                func.sum(TransactionView.amount).label('total_amount')
+            )
+            .filter(TransactionView.amount < 0)  # Only get expenses (negative amounts)
+            .group_by(TransactionView.vendor)
+            .order_by(func.count(TransactionView.id).desc())  # ASC because expenses are negative
+            .limit(limit)
+            .all()
+        )
+        return [VendorSummary(vendor=r[0], count=r[1], total_amount=abs(r[2])) for r in results]
+        
+    
