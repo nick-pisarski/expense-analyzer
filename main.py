@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import logging
 from datetime import datetime, timedelta
 
+from expense_analyzer.database.models import Transaction
 from expense_analyzer.expense_analyzer import ExpenseAnalyzer
 from expense_analyzer.services.expense_service import ExpenseService
 from expense_analyzer.report_generators import ConsoleExpenseReportGenerator, MarkdownExpenseReportGenerator
@@ -12,6 +13,34 @@ from expense_analyzer.utils.logging_config import configure_logging
 load_dotenv()
 configure_logging()
 
+def print_transaction(transaction: Transaction):
+    space = 40
+    print(f"{transaction.date} | {transaction.vendor[:space]:<{space}} | ${transaction.absolute_amount:>7.2f} | {transaction.category.name if transaction.category else 'Uncategorized'}")
+
+def similar_transaction():
+    # Get transaction 1772
+    transaction_id = 1834
+    transaction = None
+    similar_transactions = []
+    with ExpenseService() as expense_service:
+        transaction = expense_service.transaction_category_repository.get_transaction(transaction_id)
+        similar_transactions = expense_service.find_similar_transactions(transaction)
+
+    print("Transaction:")
+    print_transaction(transaction)
+    print()
+    print("Similar transactions:")
+    for transaction in similar_transactions:
+        print_transaction(transaction)
+
+def use_service_to_get_transactions():
+    # Using the ExpenseService to get transactions by date range
+    results = []
+    with ExpenseService() as expense_service:
+        results = expense_service.get_transactions_by_date_range(datetime(2025, 1, 1), datetime(2025, 12, 31))
+    print(f"Found {len(results)} transactions")
+    for result in results:
+        print_transaction(result)
 
 def main():
     """Main entry point for the expense analyzer"""
@@ -19,25 +48,21 @@ def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     # Example usage
-    analyzer = ExpenseAnalyzer(
-        input_dir="input", output_dir="output", report_generator=MarkdownExpenseReportGenerator()
-    )
+    # analyzer = ExpenseAnalyzer(
+    #     input_dir="input", output_dir="output", report_generator=MarkdownExpenseReportGenerator()
+    # )
 
     # Process all documents
     # results = analyzer.process_all_documents()
 
-    # Using the ExpenseService to get transactions by date range
+    # analyzer.embed_transactions()
 
-    with ExpenseService() as expense_service:
-        results = expense_service.get_transactions_by_date_range(datetime(2025, 1, 1), datetime(2025, 12, 31))
+    # transactions by date range 
+    # use_service_to_get_transactions()
 
-    print(f"Found {len(results)} transactions")
 
-    results_with_category = [result for result in results if result.category is not None]
-
-    for result in results_with_category:
-        print(f"{result.category.name}: {result.vendor} - ${result.absolute_amount:0.2f}")
-
+    # Test the similarity of transactions
+    similar_transaction()
 
 if __name__ == "__main__":
     main()
