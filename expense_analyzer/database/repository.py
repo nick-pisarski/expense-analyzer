@@ -44,6 +44,18 @@ class TransactionRepository:
         self.logger.debug(f"Getting transaction with ID: {transaction_id}")
         return self.db.query(Transaction).filter(Transaction.id == transaction_id).first()
 
+    def update_transaction(self, transaction: Transaction) -> None:
+        """Update a transaction"""
+        self.logger.debug(f"Updating transaction with ID: {transaction.id}")
+        try:
+            self.db.add(transaction)
+            self.db.commit()
+            self.db.refresh(transaction)
+            self.logger.debug(f"Successfully updated transaction with ID: {transaction.id}")
+        except IntegrityError:
+            self.logger.warning(f"Integrity error when updating transaction, rolling back: {transaction}")
+            self.db.rollback()
+
     def get_all_transactions(self) -> List[Transaction]:
         """Get all transactions"""
         self.logger.debug("Getting all transactions")
@@ -97,59 +109,7 @@ class TransactionRepository:
         self.logger.debug(f"Generated summary for {len(summary)} vendors")
         return summary
 
-    def find_similar_transactions(self, description: str, limit: int = 5, embedding: Optional[List[float]] = None):
-        """Find transactions with similar descriptions using vector similarity
 
-        Args:
-            description: The description to search for
-            limit: The maximum number of results to return
-            embedding: Optional pre-computed embedding for the description
-
-        Returns:
-            List of transactions with similar descriptions
-        """
-        self.logger.debug(f"Finding transactions similar to: '{description}' (limit: {limit})")
-        if embedding is None:
-            self.logger.debug("No embedding provided, generating one")
-            embedding = self._generate_embedding(description)
-
-        # Convert to numpy array
-        embedding_array = np.array(embedding)
-
-        # Query using cosine similarity
-        transactions = (
-            self.db.query(Transaction)
-            .filter(Transaction.embedding.is_not(None))
-            .order_by(Transaction.embedding.cosine_distance(embedding_array))
-            .limit(limit)
-            .all()
-        )
-        self.logger.debug(f"Found {len(transactions)} similar transactions")
-        return transactions
-
-    def _generate_embedding(self, text: str) -> List[float]:
-        """Generate embedding for text using a model of your choice
-
-        This is a placeholder method. You'll need to implement this with your
-        preferred embedding model (e.g., OpenAI, Sentence Transformers, etc.)
-
-        Args:
-            text: The text to generate an embedding for
-
-        Returns:
-            A list of floats representing the embedding
-        """
-        self.logger.debug(f"Generating embedding for text: '{text[:30]}...' if len(text) > 30 else text")
-        # Placeholder - replace with actual embedding generation
-        # Example with OpenAI:
-        # from openai import OpenAI
-        # client = OpenAI()
-        # response = client.embeddings.create(input=text, model="text-embedding-ada-002")
-        # return response.data[0].embedding
-
-        # For now, return a dummy embedding of the right size
-        self.logger.debug("Using placeholder embedding (this should be replaced with actual implementation)")
-        return [0.0] * 1536
 
 
 class CategoryRepository:
@@ -242,6 +202,17 @@ class TransactionCategoryRepository:
         )
         return transaction
 
+    def get_transactions_with_category(self) -> List[Transaction]:
+        """Get all transactions with a category"""
+        self.logger.debug("Getting all transactions with a category")
+        transactions = (
+            self.db.query(Transaction)
+            .options(joinedload(Transaction.category))
+            .filter(Transaction.category_id.is_not(None))
+            .all()
+        )
+        return transactions
+    
     def get_transactions_by_date_range(self, start_date: datetime, end_date: datetime) -> List[Transaction]:
         """Get all transactions within a date range"""
         self.logger.debug(f"Getting all transactions between {start_date} and {end_date}")
@@ -273,4 +244,32 @@ class TransactionCategoryRepository:
             .filter(Category.name == category_name)
             .all()
         )
+        return transactions
+
+    def find_similar_transactions(self, embedding: List[float], limit: int = 5):
+        """Find transactions with similar descriptions using vector similarity
+
+        Args:
+            description: The description to search for
+            limit: The maximum number of results to return
+            embedding: Optional pre-computed embedding for the description
+
+        Returns:
+            List of transactions with similar descriptions
+        """
+        self.logger.debug(f"Finding similar transactions (limit: {limit})")
+
+        # Convert to numpy array
+        embedding_array = np.array(embedding)
+
+        # Query using cosine similarity
+        transactions = (
+            self.db.query(Transaction)
+            .options(joinedload(Transaction.category))
+            .filter(Transaction.embedding.is_not(None), Transaction.category_id.is_not(None))
+            .order_by(Transaction.embedding.cosine_distance(embedding_array))
+            .limit(limit)
+            .all()
+        )
+        self.logger.debug(f"Found {len(transactions)} similar transactions")
         return transactions
