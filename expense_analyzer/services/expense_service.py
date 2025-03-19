@@ -12,21 +12,23 @@ from expense_analyzer.database.connection import get_db
 from expense_analyzer.models.transaction import ReportTransaction
 from expense_analyzer.database.models import Transaction, Category
 from expense_analyzer.embedder.transaction_embedder import TransactionEmbedder
+from expense_analyzer.categorizers import SimpleCategorizer
 
 class ExpenseService:
     """Service for managing expense data"""
 
     def __init__(self):
         self.db: Session = get_db()
+
         self.transaction_repository = TransactionRepository(self.db)
         self.category_repository = CategoryRepository(self.db)
         self.transaction_category_repository = TransactionCategoryRepository(self.db)
+
+        self.embedder = TransactionEmbedder()
+        self.categorizer = SimpleCategorizer()
+
         self.logger = logging.getLogger("expense_analyzer.services.ExpenseService")
         self.logger.debug("ExpenseService initialized")
-        self.embedder = TransactionEmbedder()
-
-        # TODO: Add logic to categorize transactions
-        # self.categorizer = Categorizer()
 
     def __enter__(self):
         return self
@@ -65,8 +67,17 @@ class ExpenseService:
         self.logger.debug(f"Inserting {len(transactions)} transactions into the database")
         # Insert transactions into the database
         database_transactions: List[dict] = self._convert_report_transactions_to_database_transactions(transactions)
+        sub_categories = self.category_repository.get_all_subcategories()
         success_count = 0
         for transaction in database_transactions:
+            category: Category = self._get_category_for_transaction(transaction, sub_categories)
+            if category:
+                transaction["category_id"] = category.id
+
+            # Embed the transaction
+            embedding = self.embedder.embed_transaction(transaction)
+            transaction["embedding"] = embedding
+
             transaction = self.transaction_repository.create_transaction(transaction)
             if transaction:
                 success_count += 1
@@ -106,24 +117,16 @@ class ExpenseService:
             embedding = self.embedder.embed_transaction(transaction)
         return self.transaction_category_repository.find_similar_transactions(embedding, limit)
 
-    def categorize_transactions(self, transactions: List[Transaction]) -> None:
-        """Categorize transactions"""
-        for transaction in transactions:
-            self._get_category_for_transaction(transaction)
-
-    def _get_category_for_transaction(self, transaction: Transaction) -> Category:
+    def _get_category_for_transaction(self, transaction: Transaction, sub_categories: List[Category]) -> Category | None:
         """Get a category for a transaction"""
 
-        # Fetch all subcategories from the database
-        # subcategories = self.category_repository.get_subcategories()
-
         # Search for similar transactions
-        # similar_transactions = self.transaction_repository.find_similar_transactions(transaction)
+        embedding = self.embedder.embed_transaction(transaction)
+        similar_transactions = self.transaction_category_repository.find_similar_transactions(embedding, 10)
 
         # Use catergorizer to categorize the transaction
-        # category = self.categorizer.categorize(transaction)
+        category = self.categorizer.categorize(transaction, similar_transactions, sub_categories)
 
-        # return category
+        return category
 
-        # TODO: Implement categorization logic
-        raise NotImplementedError("Categorization not implemented")
+        # raise NotImplementedError("Categorization not implemented")
