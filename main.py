@@ -2,12 +2,10 @@
 
 from dotenv import load_dotenv
 import logging
-from datetime import datetime, timedelta
 
 from expense_analyzer.database.models import Transaction
-from expense_analyzer.expense_analyzer import ExpenseAnalyzer
 from expense_analyzer.services.expense_service import ExpenseService
-from expense_analyzer.report_generators import ConsoleExpenseReportGenerator, MarkdownExpenseReportGenerator
+from expense_analyzer.services.report_service import ReportService
 from expense_analyzer.utils.logging_config import configure_logging
 
 load_dotenv()
@@ -63,10 +61,10 @@ def main():
     logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     # Example usage
-    analyzer = ExpenseAnalyzer(
-        input_dir="input", output_dir="output", report_generator=MarkdownExpenseReportGenerator()
-    )
-    analyzer.categorize_transactions_without_category()
+    # analyzer = ExpenseAnalyzer(
+        # input_dir="input", output_dir="output", report_generator=MarkdownExpenseReportGenerator()
+    # )
+    # analyzer.categorize_transactions_without_category()
 
     # Process all documents
     # results = analyzer.process_all_documents()
@@ -80,6 +78,14 @@ def main():
 
     # Test the categorization of transactions
     # categorize_transactions()
+
+    # Test the report generation
+    report_service = ReportService()
+    report = report_service.generate_report_data()
+    for item in report.top_five_expenses:
+        print(item)
+    for vendor in report.top_five_vendors:
+        print(vendor)
 
 if __name__ == "__main__":
     main()
