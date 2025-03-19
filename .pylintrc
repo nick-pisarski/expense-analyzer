@@ -1,0 +1,11 @@
+[MESSAGES CONTROL]
+# Disable specific rules
+disable=W1203, # logging-fstring-interpolation
+        W0718, # broad-exception-caught
+
+# Enable specific rules
+; enable=W0611,   # unused-import
+;        W0612    # unused-variable
+
+[format]
+max-line-length = 120
