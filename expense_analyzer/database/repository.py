@@ -176,6 +176,13 @@ class CategoryRepository:
         self.logger.debug(f"Retrieved {len(categories)} subcategories for parent ID: {parent_id}")
         return categories
 
+    def get_all_subcategories(self) -> List[Category]:
+        """Get all subcategories"""
+        self.logger.debug("Getting all subcategories")
+        categories = self.db.query(Category).filter(Category.parent_id.is_not(None)).all()
+        self.logger.debug(f"Retrieved {len(categories)} subcategories")
+        return categories
+
 
 class TransactionCategoryRepository:
     """Repository for getting transactions with categories"""
