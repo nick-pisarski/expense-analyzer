@@ -38,7 +38,7 @@ class ProcessDocumentsResult:
 
 
 class ExpenseAnalyzer:
-    """Main controller class for analyzing expenses from various financial documents"""
+    """Main controller class for analyzing expenses from various financial documents and generating various reports"""
 
     def __init__(self, input_dir: str, output_dir: str, report_generator: ExpenseReportGenerator):
         """Initialize the ExpenseAnalyzer
@@ -120,18 +120,16 @@ class ExpenseAnalyzer:
         """Generate all reports"""
         raise NotImplementedError("Report generation not implemented")
 
-    def embed_transactions(self) -> None:
-        """Create embeddings for all transactions in the database.
-        
-        Used to re-embed transactions after they have been updated.
-        """
-        with ExpenseService() as expense_service:
-            expense_service.embed_transactions()
-
-    def _categorize_transactions(self) -> None:
+    def categorize_transactions_without_category(self) -> None:
         """Categorize transactions. Looks for all transactions in the database that do not have a category 
         and categorizes them, then re-embeds them."""
-        raise NotImplementedError("Transaction categorization not implemented")
+
+        # TODO: This function should not be in the ExpenseAnalyzer class. It should be in the ExpenseService class.
+        with ExpenseService() as expense_service:
+            transactions = expense_service.get_transactions_without_category()
+            self.logger.info(f"Categorizing {len(transactions)} transactions without a category")
+            expense_service.update_transactions_category(transactions)
+            self.logger.debug(f"Categorizing Complete")
 
     def save_expense_report(self, report: ExpenseReportData, file_name: Optional[str] = None) -> None:
         """Save a monthly report to the output directory

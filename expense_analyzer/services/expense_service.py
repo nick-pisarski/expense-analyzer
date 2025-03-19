@@ -117,6 +117,20 @@ class ExpenseService:
             embedding = self.embedder.embed_transaction(transaction)
         return self.transaction_category_repository.find_similar_transactions(embedding, limit)
 
+    def update_transactions_category(self, transactions: List[Transaction]) -> None:
+        """Update the category of a transaction and re-embed it"""
+        sub_categories = self.category_repository.get_all_subcategories()
+        for transaction in transactions:
+            category = self._get_category_for_transaction(transaction, sub_categories)
+            if category:
+                transaction.category = category
+                self.logger.debug(f"Updating transaction {transaction.id} with category {category.name}")
+
+                embedding = self.embedder.embed_transaction(transaction)
+                transaction.embedding = embedding
+
+                self.transaction_repository.update_transaction(transaction)
+
     def _get_category_for_transaction(self, transaction: Transaction, sub_categories: List[Category]) -> Category | None:
         """Get a category for a transaction"""
 
