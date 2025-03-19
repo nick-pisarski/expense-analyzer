@@ -1,6 +1,7 @@
 """SQLAlchemy models for the expense analyzer"""
 
 from datetime import datetime
+from dataclasses import dataclass
 from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey, Text, Enum, DateTime, UniqueConstraint
 from sqlalchemy.orm import relationship
 from pgvector.sqlalchemy import Vector
@@ -74,3 +75,35 @@ class Transaction(Base):
 
     def __str__(self):
         return f"Transaction(id={self.id}, vendor={self.vendor}, amount={self.amount}, date={self.date}, description={self.description}, source={self.source}, category_id={self.category_id})"
+
+class TransactionView(Base):
+    """Transaction view model"""
+    __tablename__ = "transaction_with_category_view"
+
+    # Make it clear this is a view by adding mapper args
+    __mapper_args__ = {
+        'primary_key': ['id'],  # Specify primary key as a list of column names
+    }
+    id = Column(Integer, primary_key=True)  # Remove index=True as it's not needed for views
+    vendor = Column(String)
+    amount = Column(Float, nullable=False)
+    date = Column(Date, nullable=False)
+    category_name = Column(String)
+    parent_category_name = Column(String)
+
+    def __str__(self):
+        space = 40
+        return f"{self.date} | {self.vendor[:space]:<{space}} | ${abs(self.amount):>7.2f} | {self.category_name}[{self.parent_category_name}]"
+
+    def __repr__(self):
+        return f"TransactionView(id={self.id}, vendor={self.vendor}, amount={self.amount}, date={self.date}, category_name={self.category_name}, parent_category_name={self.parent_category_name})"
+
+@dataclass
+class VendorSummary:
+
+    vendor: str
+    count: int
+    total_amount: float
+
+    def __str__(self):
+        return f"{self.vendor[:40]:<40} | {self.count:>4} | ${self.total_amount:>7.2f}"
