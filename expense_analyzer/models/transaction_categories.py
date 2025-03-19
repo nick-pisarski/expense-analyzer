@@ -14,6 +14,7 @@ class TransactionCategory(Enum):
     PERSONAL_CARE = "Personal Care (Charity, Misc, Other, etc.)"
     TRANSPORTATION = "Transportation (Gas, Car, etc.)"
     SAVINGS_AND_INSURANCE = "Savings and Personal Insurance (401k, IRA, etc.)"
+    PERSONAL_FINANCE = "Personal Finance (Credit Card, etc.)"
     MISCELLANEOUS = "Miscellaneous"
 
 
@@ -38,6 +39,7 @@ class TransactionSubCategory(Enum):
     CAR_REGISTRATION = "Car Registration"
     CAR_GAS = "Car Gas"
     PUBLIC_TRANSPORTATION = "Public Transportation (E-Z Pass, etc.)"
+    CAR_MAINTENANCE = "Car Maintenance"
 
     # Entertainment
     SUBSCRIPTIONS = "Subscriptions"
@@ -60,6 +62,8 @@ class TransactionSubCategory(Enum):
     BEAUTY = "Beauty (Hair, Nails, etc.)"
     AMAZON = "Amazon"
     TARGET = "Target"
+    PERSONAL_HEALTH = "Personal Health"
+    SHOPPING = "Shopping"
 
     # Savings and Insurance
     LIFE_INSURANCE_NICK = "Life Insurance (Nick)"
@@ -74,6 +78,12 @@ class TransactionSubCategory(Enum):
     RETIREMENT_IRA_SYDNEY = "Retirement (IRA) (Sydney)"
     NON_RETIREMENT_ACCOUNT = "Non-Retirement Account"
     ESPP = "Employee Stock Purchase Plan"
+    CREDIT_CARD_PAYMENT = "Credit Card Payment"
+
+    # Entertainment
+    ENTERTAINMENT_MOVIES = "Entertainment (Movies, Concerts, etc.)"
+    NICK_ENTERTAINMENT = "Entertainment (Nick)"
+    SYDNEY_ENTERTAINMENT = "Entertainment (Sydney)"
 
     # Other
     OTHER = "Other"
@@ -123,7 +133,14 @@ TRANSACTION_SUBCATEGORY_TO_CATEGORY = {
     TransactionSubCategory.RETIREMENT_IRA_SYDNEY: TransactionCategory.SAVINGS_AND_INSURANCE,
     TransactionSubCategory.NON_RETIREMENT_ACCOUNT: TransactionCategory.SAVINGS_AND_INSURANCE,
     TransactionSubCategory.ESPP: TransactionCategory.SAVINGS_AND_INSURANCE,
+    TransactionSubCategory.CREDIT_CARD_PAYMENT: TransactionCategory.PERSONAL_FINANCE,
     TransactionSubCategory.OTHER: TransactionCategory.MISCELLANEOUS,
+    TransactionSubCategory.PERSONAL_HEALTH: TransactionCategory.PERSONAL_CARE,
+    TransactionSubCategory.SHOPPING: TransactionCategory.PERSONAL_CARE,
+    TransactionSubCategory.CAR_MAINTENANCE: TransactionCategory.TRANSPORTATION,
+    TransactionSubCategory.ENTERTAINMENT_MOVIES: TransactionCategory.ENTERTAINMENT,
+    TransactionSubCategory.NICK_ENTERTAINMENT: TransactionCategory.ENTERTAINMENT,
+    TransactionSubCategory.SYDNEY_ENTERTAINMENT: TransactionCategory.ENTERTAINMENT,
 }
 
 
