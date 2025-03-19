@@ -48,7 +48,6 @@ class ExpenseService:
         database_transactions = []
         self.logger.debug(f"Converting {len(transactions)} transactions to database transactions")
         for transaction in transactions:
-
             database_transaction = {
                 "vendor": transaction.vendor,
                 "amount": transaction.amount,
@@ -79,7 +78,16 @@ class ExpenseService:
 
     def get_all_transactions(self) -> List[ReportTransaction]:
         """Get all transactions"""
-        return self.transaction_repository.get_all_transactions()
+        return self.transaction_category_repository.get_transactions()
+
+    def get_transactions_without_category(self) -> List[Transaction]:
+        """Get all transactions without a category"""
+        return self.transaction_repository.get_transactions_without_category()
+
+    def categorize_transactions(self, transactions: List[Transaction]) -> None:
+        """Categorize transactions"""
+        for transaction in transactions:
+            self._get_category_for_transaction(transaction)
 
     def _get_category_for_transaction(self, transaction: Transaction) -> Category:
         """Get a category for a transaction"""

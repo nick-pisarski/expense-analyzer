@@ -2,9 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import List, Dict, Optional, Tuple
-from datetime import datetime
-from collections import defaultdict
+from typing import List, Optional, Tuple
 
 from expense_analyzer.file_readers import BankOfAmericaPdfReader
 from expense_analyzer.models import ExpenseReportData, ReportTransaction
@@ -114,6 +112,26 @@ class ExpenseAnalyzer:
                 self.logger.error(f"Error processing {pdf_file.name}: {e}")
         return transactions_found, len(files_found)
 
+    def _process_tdecu_documents(self) -> Tuple[List[ReportTransaction], int]:
+        """Process all TDECU PDF statements"""
+        raise NotImplementedError("TDECU processing not implemented")
+
+    def _generate_reports(self) -> None:
+        """Generate all reports"""
+        raise NotImplementedError("Report generation not implemented")
+
+    def _embed_transactions(self) -> None:
+        """Create embeddings for all transactions in the database.
+        
+        Used to re-embed transactions after they have been updated.
+        """
+        raise NotImplementedError("Transaction embedding not implemented")
+
+    def _categorize_transactions(self) -> None:
+        """Categorize transactions. Looks for all transactions in the database that do not have a category 
+        and categorizes them, then re-embeds them."""
+        raise NotImplementedError("Transaction categorization not implemented")
+
     def save_expense_report(self, report: ExpenseReportData, file_name: Optional[str] = None) -> None:
         """Save a monthly report to the output directory
 
@@ -125,7 +143,7 @@ class ExpenseAnalyzer:
             file_name = f"expense_report_{report.start_date.strftime('%Y-%m')}-to-{report.end_date.strftime('%Y-%m')}"
 
         report_file = self.output_dir / "reports" / f"{file_name}.md"
-        with open(report_file, "w") as f:
+        with open(report_file, "w", encoding="utf-8") as f:
             f.write(self.report_generator.generate_report(report))
 
         self.logger.info(f"Saved monthly report to {report_file}")

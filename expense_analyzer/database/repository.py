@@ -9,8 +9,6 @@ from sqlalchemy.exc import IntegrityError
 import numpy as np
 
 from expense_analyzer.database.models import Transaction, Category
-from expense_analyzer.models.transaction import ReportTransaction
-
 
 class TransactionRepository:
     """Repository for transaction data"""
@@ -51,6 +49,13 @@ class TransactionRepository:
         self.logger.debug("Getting all transactions")
         transactions = self.db.query(Transaction).all()
         self.logger.debug(f"Retrieved {len(transactions)} transactions")
+        return transactions
+
+    def get_transactions_without_category(self) -> List[Transaction]:
+        """Get all transactions without a category"""
+        self.logger.debug("Getting all transactions without a category")
+        transactions = self.db.query(Transaction).filter(Transaction.category_id.is_(None)).all()
+        self.logger.debug(f"Retrieved {len(transactions)} transactions without a category")
         return transactions
 
     def get_transactions_by_date_range(self, start_date: datetime, end_date: datetime) -> List[Transaction]:
