@@ -120,12 +120,13 @@ class ExpenseAnalyzer:
         """Generate all reports"""
         raise NotImplementedError("Report generation not implemented")
 
-    def _embed_transactions(self) -> None:
+    def embed_transactions(self) -> None:
         """Create embeddings for all transactions in the database.
         
         Used to re-embed transactions after they have been updated.
         """
-        raise NotImplementedError("Transaction embedding not implemented")
+        with ExpenseService() as expense_service:
+            expense_service.embed_transactions()
 
     def _categorize_transactions(self) -> None:
         """Categorize transactions. Looks for all transactions in the database that do not have a category 
