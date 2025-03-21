@@ -34,6 +34,8 @@ class ReportData:
     top_vendors: List[VendorSummary]
     top_expenses: List[ReportDataItem]
 
+    total_amount: float
+    total_transactions: int
 
 class CategorySummary:
     """Data class for storing category summary"""
