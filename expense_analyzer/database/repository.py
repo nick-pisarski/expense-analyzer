@@ -4,7 +4,7 @@ from typing import List, Optional, Dict
 from datetime import datetime
 import logging
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func, text
+from sqlalchemy import func, text, extract
 from sqlalchemy.exc import IntegrityError
 import numpy as np
 from dataclasses import dataclass
@@ -294,3 +294,13 @@ class TransactionViewRepository:
             .all()
         )
         return [VendorSummary(vendor=r[0], count=r[1], total_amount=abs(r[2])) for r in results]
+
+    def get_transactions_by_year(self, year: int) -> List[TransactionView]:
+        """Get all transactions for a specific year"""
+        transactions = (
+            self.db.query(TransactionView)
+            .filter(TransactionView.amount < 0)  # Only get expenses (negative amounts)
+            .filter(extract('year', TransactionView.date) == year)
+            .all()
+        )
+        return transactions

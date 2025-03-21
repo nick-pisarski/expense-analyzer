@@ -1,27 +1,29 @@
 """Main entry point for the expense analyzer"""
 
+from pprint import pprint
 from dotenv import load_dotenv
-import logging
+from datetime import datetime
 
 from expense_analyzer.database.models import Transaction
+from expense_analyzer.expense_analyzer import ExpenseAnalyzer
+from expense_analyzer.report_generators.markdown_generator import MarkdownExpenseReportGenerator
 from expense_analyzer.services.expense_service import ExpenseService
 from expense_analyzer.services.report_service import ReportService
 from expense_analyzer.utils.logging_config import configure_logging
-
 load_dotenv()
 configure_logging()
 
 
 def print_transaction(transaction: Transaction):
+    """Print a transaction"""
     space = 40
     print(
         f"{transaction.date} | {transaction.vendor[:space]:<{space}} | ${transaction.absolute_amount:>7.2f} | {transaction.category.name if transaction.category else 'Uncategorized'}"
     )
 
 
-def similar_transaction():
-    # Get transaction 1772
-    transaction_id = 1834
+def similar_transaction(transaction_id: int):
+    """Find similar transactions"""
     transaction = None
     similar_transactions = []
     with ExpenseService() as expense_service:
@@ -36,18 +38,18 @@ def similar_transaction():
         print_transaction(transaction)
 
 
-def use_service_to_get_transactions():
-    # Using the ExpenseService to get transactions by date range
+def use_service_to_get_transactions(start_date: datetime, end_date: datetime):
+    """Use the ExpenseService to get transactions by date range"""
     results = []
     with ExpenseService() as expense_service:
-        results = expense_service.get_transactions_by_date_range(datetime(2025, 1, 1), datetime(2025, 12, 31))
+        results = expense_service.get_transactions_by_date_range(start_date, end_date)
     print(f"Found {len(results)} transactions")
     for result in results:
         print_transaction(result)
 
 
-def categorize_transactions():
-    transaction_id = 1723
+def categorize_transactions(transaction_id: int):
+    """Categorize a transaction"""
     transaction = None
     category = None
     with ExpenseService() as expense_service:
@@ -61,17 +63,21 @@ def categorize_transactions():
     print("Category:")
     print(category.name)
 
+def test_report_service():
+    """Test the ReportService"""
+    report_service = ReportService()
+    report = report_service.generate_report_data(2025)
+    pprint(report)
 
 def main():
     """Main entry point for the expense analyzer"""
-    # Configure logging
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    # Configure logging    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     # Example usage
-    # analyzer = ExpenseAnalyzer(
-    # input_dir="input", output_dir="output", report_generator=MarkdownExpenseReportGenerator()
-    # )
-    # analyzer.categorize_transactions_without_category()
+    analyzer = ExpenseAnalyzer(
+        input_dir="input", output_dir="output", report_generator=MarkdownExpenseReportGenerator()
+    )
+    analyzer.generate_reports(2024)
 
     # Process all documents
     # results = analyzer.process_all_documents()
@@ -86,13 +92,7 @@ def main():
     # categorize_transactions()
 
     # Test the report generation
-    report_service = ReportService()
-    report = report_service.generate_report_data()
-    for item in report.top_five_expenses:
-        print(item)
-    for vendor in report.top_five_vendors:
-        print(vendor)
-
+    # test_report_service()
 
 if __name__ == "__main__":
     main()

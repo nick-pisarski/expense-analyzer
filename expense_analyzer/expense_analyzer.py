@@ -8,6 +8,7 @@ from expense_analyzer.file_readers import BankOfAmericaPdfReader
 from expense_analyzer.models import ExpenseReportData, ReportTransaction
 from expense_analyzer.report_generators import ExpenseReportGenerator
 from expense_analyzer.services.expense_service import ExpenseService
+from expense_analyzer.services.report_service import ReportService
 
 
 class ProcessDocumentsResult:
@@ -52,6 +53,7 @@ class ExpenseAnalyzer:
         self.transactions: List[ReportTransaction] = []
         self.logger = logging.getLogger("expense_analyzer.expense_analyzer")
         self.report_generator = report_generator
+        self.report_service = ReportService()
         # Ensure directories exist
         self._setup_directories()
 
@@ -116,10 +118,6 @@ class ExpenseAnalyzer:
         """Process all TDECU PDF statements"""
         raise NotImplementedError("TDECU processing not implemented")
 
-    def _generate_reports(self) -> None:
-        """Generate all reports"""
-        raise NotImplementedError("Report generation not implemented")
-
     def categorize_transactions_without_category(self) -> None:
         """Categorize transactions. Looks for all transactions in the database that do not have a category
         and categorizes them, then re-embeds them."""
@@ -131,18 +129,19 @@ class ExpenseAnalyzer:
             expense_service.update_transactions_category(transactions)
             self.logger.debug(f"Categorizing Complete")
 
-    def save_expense_report(self, report: ExpenseReportData, file_name: Optional[str] = None) -> None:
-        """Save a monthly report to the output directory
+    def generate_reports(self, year: int, file_name: Optional[str] = None) -> str:
+        """Generate a monthly report and save it to the output directory
 
         Args:
-            report (Dict): Report data to save
-            month (str): Month in YYYY-MM format
+            year (int): Year to generate report for
+            file_name (str): File name to save report to
         """
         if file_name is None:
-            file_name = f"expense_report_{report.start_date.strftime('%Y-%m')}-to-{report.end_date.strftime('%Y-%m')}"
+            file_name = f"expense_report_{year}"
 
         report_file = self.output_dir / "reports" / f"{file_name}.md"
+        report_data = self.report_service.generate_report_data(year)
         with open(report_file, "w", encoding="utf-8") as f:
-            f.write(self.report_generator.generate_report(report))
+            f.write(self.report_generator.generate_report(report_data))
 
         self.logger.info(f"Saved monthly report to {report_file}")
