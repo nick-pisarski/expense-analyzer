@@ -125,7 +125,7 @@ class TransactionCategoryRepository:
         self.logger.debug(f"Getting the top {limit} vendors")
         transactions = (
             self.db.query(
-                Transaction,
+                Transaction.vendor,
                 func.count(Transaction.id).label("transaction_count"),
                 func.sum(Transaction.amount).label("total_amount"),
             )
@@ -135,7 +135,7 @@ class TransactionCategoryRepository:
             .limit(limit)
             .all()
         )
-        return [VendorSummary(vendor=r[0], count=r[1], total_amount=abs(r[2])) for r in results]
+        return [VendorSummary(vendor=r[0], count=r[1], total_amount=abs(r[2])) for r in transactions]
 
     def get_transactions_by_year(self, year: int) -> List[Transaction]:
         """Get all transactions for a specific year"""

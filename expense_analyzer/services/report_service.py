@@ -13,7 +13,7 @@ from expense_analyzer.database.repositories.transaction_category_repository impo
 from expense_analyzer.database.repositories.transaction_view_repository import (
     TransactionViewRepository,
 )
-from expense_analyzer.models.reports import CategorySummary, ReportData, ReportDataItem
+from expense_analyzer.models.reports import CategorySummary, OverviewSummary, ReportData, ReportDataItem
 
 
 class ReportService:
@@ -44,9 +44,17 @@ class ReportService:
             highest_spending_vendor=self._get_highest_spending_vendor(),
             top_vendors=self._get_top_vendors(),
             top_expenses=self._get_top_expenses(categories),
-            total_amount=sum(transaction.amount for transaction in transactions),
+            total_amount=self._get_total_expenses(transactions),
             total_transactions=len(transactions),
         )
+
+    def _get_total_expenses(self, transactions: List[ReportDataItem]) -> float:
+        """Get the total expenses"""
+        total_expenses = 0
+        for transaction in transactions:
+            if transaction.amount < 0:
+                total_expenses += abs(transaction.amount)
+        return total_expenses
 
     def _map_transaction_to_report_data_item(
         self, transaction: Transaction, categories: List[Category]
@@ -72,7 +80,7 @@ class ReportService:
         expenses = self.repository.get_top_expenses(limit=10)
         return [self._map_transaction_to_report_data_item(transaction, categories) for transaction in expenses]
 
-    def _get_average_month(self) -> Dict[Category, float]:
+    def _get_average_month(self) -> Dict[Category, CategorySummary]:
         """Get the average month data"""
         return {}
 
@@ -98,25 +106,25 @@ class ReportService:
         }
         return category_summaries
 
-    def _get_per_month_data_for_year(self, transactions: List[ReportDataItem]) -> Dict[str, Dict[Category, float]]:
+    def _get_per_month_data_for_year(
+        self, transactions: List[ReportDataItem]
+    ) -> Dict[str, OverviewSummary]:
         """Get the per month data for a given year"""
-        # Initialize dictionary with all months
-        per_month_data = {}
-
         # Group transactions by month
+        per_month_transactions = {}
         for transaction in transactions:
             month = transaction.date.strftime("%B")  # Get month name
-            if month not in per_month_data:
-                per_month_data[month] = []
-            per_month_data[month].append(transaction)
+            if month not in per_month_transactions:
+                per_month_transactions[month] = []
+            per_month_transactions[month].append(transaction)
 
         # Sum the transactions by category
-        for month in per_month_data:
-            per_month_data[month] = self._get_category_summaries(per_month_data[month])
+        per_month_data = {}
+        for month, transactions in per_month_transactions.items():
+            per_month_data[month] = OverviewSummary(self._get_category_summaries(transactions))
 
         return per_month_data
 
-    def _get_per_year_data(self, transactions: List[ReportDataItem]) -> Dict[Category, float]:
+    def _get_per_year_data(self, transactions: List[ReportDataItem]) -> OverviewSummary:
         """Get the per year data"""
-        per_year_data = self._get_category_summaries(transactions)
-        return per_year_data
+        return OverviewSummary(self._get_category_summaries(transactions))
