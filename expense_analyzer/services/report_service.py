@@ -42,8 +42,8 @@ class ReportService:
             average_month=self._get_average_month(),
             highest_spending_month=self._get_highest_spending_month(),
             highest_spending_vendor=self._get_highest_spending_vendor(),
-            top_vendors=self._get_top_vendors(),
-            top_expenses=self._get_top_expenses(categories),
+            top_vendors=self._get_top_vendors(year),
+            top_expenses=self._get_top_expenses(categories, year),
             total_amount=self._get_total_expenses(transactions),
             total_transactions=len(transactions),
         )
@@ -70,14 +70,14 @@ class ReportService:
             vendor=transaction.vendor,
         )
 
-    def _get_top_vendors(self) -> List[VendorSummary]:
+    def _get_top_vendors(self, year: int) -> List[VendorSummary]:
         """Get the top 5 vendors by expense amount"""
-        vendors = self.repository.get_top_vendors(limit=10)
+        vendors = self.repository.get_top_vendors(year, limit=10)
         return vendors
 
-    def _get_top_expenses(self, categories: List[Category]) -> List[ReportDataItem]:
+    def _get_top_expenses(self, categories: List[Category], year: int) -> List[ReportDataItem]:
         """Get the top 5 expenses by amount"""
-        expenses = self.repository.get_top_expenses(limit=10)
+        expenses = self.repository.get_top_expenses(year, limit=10)
         return [self._map_transaction_to_report_data_item(transaction, categories) for transaction in expenses]
 
     def _get_average_month(self) -> Dict[Category, CategorySummary]:

@@ -81,8 +81,9 @@ def main():
 
     # Example usage
     analyzer = ExpenseAnalyzer(
-        input_dir="input", output_dir="output", report_generator=MarkdownExpenseReportGenerator()
+        input_dir="input", output_dir="output", report_generator=MarkdownExpenseReportGenerator(verbose=False)
     )
+    analyzer.generate_reports(2024)
     analyzer.generate_reports(2025)
 
     # Process all documents

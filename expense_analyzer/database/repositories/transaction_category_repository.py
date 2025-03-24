@@ -107,29 +107,29 @@ class TransactionCategoryRepository:
         return transactions
 
     # For ReportService, TODO: Maybe add to a new ReportRepository?
-    def get_top_expenses(self, limit: int = 5) -> List[Transaction]:
+    def get_top_expenses(self, year: int, limit: int = 5) -> List[Transaction]:
         """Get the top expenses"""
-        self.logger.debug(f"Getting the top {limit} expenses")
+        self.logger.debug(f"Getting the top {limit} expenses for year: {year}")
         transactions = (
             self.db.query(Transaction)
             .options(joinedload(Transaction.category))
-            .where(Transaction.amount < 0)
+            .where(Transaction.amount < 0, extract("year", Transaction.date) == year)
             .order_by(Transaction.amount.asc())
             .limit(limit)
             .all()
         )
         return transactions
 
-    def get_top_vendors(self, limit: int = 5) -> List[VendorSummary]:
+    def get_top_vendors(self, year: int, limit: int = 5) -> List[VendorSummary]:
         """Get the top vendors"""
-        self.logger.debug(f"Getting the top {limit} vendors")
+        self.logger.debug(f"Getting the top {limit} vendors for year: {year}")
         transactions = (
             self.db.query(
                 Transaction.vendor,
                 func.count(Transaction.id).label("transaction_count"),
                 func.sum(Transaction.amount).label("total_amount"),
             )
-            .where(Transaction.amount < 0)
+            .where(Transaction.amount < 0, extract("year", Transaction.date) == year)
             .group_by(Transaction.vendor)
             .order_by(func.count(Transaction.id).desc())
             .limit(limit)
