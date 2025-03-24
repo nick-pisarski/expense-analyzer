@@ -1,7 +1,9 @@
-from openai import OpenAI
-from expense_analyzer.database.models import Transaction, Category
-from typing import List
 import logging
+from typing import List
+
+from openai import OpenAI
+
+from expense_analyzer.database.models import Category, Transaction
 
 CATEGORIZER_PROMPT = """
 You are a helpful assistant that is very good at assigning categorizes to financial transactions.

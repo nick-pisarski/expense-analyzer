@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 from expense_analyzer.models.reports import ReportData
 
 

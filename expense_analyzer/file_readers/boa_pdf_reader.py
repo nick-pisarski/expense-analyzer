@@ -1,13 +1,15 @@
 """File reader for Bank of America PDF statements"""
 
-import re
-import pdfplumber
 import logging
-from datetime import datetime
-from expense_analyzer.file_readers.base_file_reader import BaseFileReader
-from expense_analyzer.models.boa_transaction import BankOfAmericaTransaction
+import re
 from collections import defaultdict
 from dataclasses import dataclass
+from datetime import datetime
+
+import pdfplumber
+
+from expense_analyzer.file_readers.base_file_reader import BaseFileReader
+from expense_analyzer.models.boa_transaction import BankOfAmericaTransaction
 
 
 @dataclass

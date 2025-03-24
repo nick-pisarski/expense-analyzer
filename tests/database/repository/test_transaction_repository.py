@@ -1,13 +1,16 @@
 """Unit tests for the TransactionRepository class."""
 
 import unittest
-from unittest.mock import MagicMock, patch
 from datetime import date
-from sqlalchemy.orm import Session
+from unittest.mock import MagicMock, patch
+
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 from expense_analyzer.database.models import Transaction
-from expense_analyzer.database.repositories.transaction_repository import TransactionRepository
+from expense_analyzer.database.repositories.transaction_repository import (
+    TransactionRepository,
+)
 from expense_analyzer.models.source import Source
 
 

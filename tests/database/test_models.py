@@ -3,7 +3,7 @@
 import unittest
 from datetime import date
 
-from expense_analyzer.database.models import Transaction, Category
+from expense_analyzer.database.models import Category, Transaction
 from expense_analyzer.models.source import Source
 
 

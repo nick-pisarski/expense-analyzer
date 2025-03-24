@@ -1,7 +1,7 @@
 """Logging configuration for the expense analyzer"""
 
-import os
 import logging
+import os
 from logging.config import dictConfig
 
 

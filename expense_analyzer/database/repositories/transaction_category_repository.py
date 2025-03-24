@@ -1,13 +1,12 @@
-from expense_analyzer.database.models import Category, Transaction
-
-
-import numpy as np
-from sqlalchemy.orm import Session, joinedload
-
-
 import logging
 from datetime import datetime
 from typing import List, Optional
+
+import numpy as np
+from sqlalchemy import extract, func
+from sqlalchemy.orm import Session, joinedload
+
+from expense_analyzer.database.models import Category, Transaction, VendorSummary
 
 
 class TransactionCategoryRepository:
@@ -105,4 +104,46 @@ class TransactionCategoryRepository:
             .all()
         )
         self.logger.debug(f"Found {len(transactions)} similar transactions")
+        return transactions
+
+    # For ReportService, TODO: Maybe add to a new ReportRepository?
+    def get_top_expenses(self, limit: int = 5) -> List[Transaction]:
+        """Get the top expenses"""
+        self.logger.debug(f"Getting the top {limit} expenses")
+        transactions = (
+            self.db.query(Transaction)
+            .options(joinedload(Transaction.category))
+            .where(Transaction.amount < 0)
+            .order_by(Transaction.amount.asc())
+            .limit(limit)
+            .all()
+        )
+        return transactions
+
+    def get_top_vendors(self, limit: int = 5) -> List[VendorSummary]:
+        """Get the top vendors"""
+        self.logger.debug(f"Getting the top {limit} vendors")
+        transactions = (
+            self.db.query(
+                Transaction,
+                func.count(Transaction.id).label("transaction_count"),
+                func.sum(Transaction.amount).label("total_amount"),
+            )
+            .where(Transaction.amount < 0)
+            .group_by(Transaction.vendor)
+            .order_by(func.count(Transaction.id).desc())
+            .limit(limit)
+            .all()
+        )
+        return [VendorSummary(vendor=r[0], count=r[1], total_amount=abs(r[2])) for r in results]
+
+    def get_transactions_by_year(self, year: int) -> List[Transaction]:
+        """Get all transactions for a specific year"""
+        self.logger.debug(f"Getting all transactions for year: {year}")
+        transactions = (
+            self.db.query(Transaction)
+            .options(joinedload(Transaction.category))
+            .where(extract("year", Transaction.date) == year)
+            .all()
+        )
         return transactions

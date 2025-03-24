@@ -2,11 +2,14 @@
 
 import unittest
 from unittest.mock import MagicMock
-from sqlalchemy.orm import Session
+
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 from expense_analyzer.database.models import Category
-from expense_analyzer.database.repositories.category_repository import CategoryRepository
+from expense_analyzer.database.repositories.category_repository import (
+    CategoryRepository,
+)
 
 
 class TestCategoryRepository(unittest.TestCase):

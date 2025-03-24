@@ -1,10 +1,22 @@
 """SQLAlchemy models for the expense analyzer"""
 
-from datetime import datetime
 from dataclasses import dataclass
-from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey, Text, Enum, DateTime, UniqueConstraint
-from sqlalchemy.orm import relationship
+from datetime import datetime
+
 from pgvector.sqlalchemy import Vector
+from sqlalchemy import (
+    Column,
+    Date,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
+from sqlalchemy.orm import relationship
 
 from expense_analyzer.database.connection import Base
 from expense_analyzer.models.source import Source

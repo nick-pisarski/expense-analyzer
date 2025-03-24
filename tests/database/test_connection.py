@@ -1,12 +1,12 @@
 """Unit tests for the database connection."""
 
-import unittest
-from unittest.mock import patch, MagicMock
 import os
+import unittest
+from unittest.mock import MagicMock, patch
 
 from sqlalchemy.orm import Session
 
-from expense_analyzer.database.connection import get_db, engine, Base, SessionLocal
+from expense_analyzer.database.connection import Base, SessionLocal, engine, get_db
 
 
 class TestDatabaseConnection(unittest.TestCase):

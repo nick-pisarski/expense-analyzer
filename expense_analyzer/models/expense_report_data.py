@@ -1,8 +1,8 @@
-from typing import List, Dict
+from dataclasses import dataclass
 from datetime import datetime
+from typing import Dict, List
 
 from expense_analyzer.models.transaction import ReportTransaction
-from dataclasses import dataclass
 
 
 @dataclass

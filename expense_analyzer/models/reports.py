@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, List
+
 from expense_analyzer.database.models import Category, VendorSummary
 
 
@@ -36,6 +37,7 @@ class ReportData:
 
     total_amount: float
     total_transactions: int
+
 
 class CategorySummary:
     """Data class for storing category summary"""

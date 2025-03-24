@@ -1,6 +1,8 @@
 from typing import List
-from expense_analyzer.database.models import Transaction
+
 from openai import OpenAI
+
+from expense_analyzer.database.models import Transaction
 
 
 class TransactionEmbedder:

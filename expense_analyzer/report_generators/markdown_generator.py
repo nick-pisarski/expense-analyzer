@@ -1,6 +1,7 @@
-from typing import List, Dict, Optional
-from expense_analyzer.database.models import VendorSummary, Category
-from expense_analyzer.models.reports import ReportData, ReportDataItem, CategorySummary
+from typing import Dict, List, Optional
+
+from expense_analyzer.database.models import Category, VendorSummary
+from expense_analyzer.models.reports import CategorySummary, ReportData, ReportDataItem
 from expense_analyzer.report_generators.base_generator import ExpenseReportGenerator
 
 
@@ -76,8 +77,8 @@ class MarkdownExpenseReportGenerator(ExpenseReportGenerator):
             for category, data in per_month_data[month].items():
                 md += self._get_category_summary(category, data)
         return md
-    
-    def _get_year_summary(self,year: int, year_data: Dict[Category, float]) -> str:
+
+    def _get_year_summary(self, year: int, year_data: Dict[Category, float]) -> str:
         """Generate a markdown summary of the year data"""
         md = f"## {year} summary \n\n"
         for category in year_data:

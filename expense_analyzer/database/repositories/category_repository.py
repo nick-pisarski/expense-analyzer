@@ -1,12 +1,10 @@
-from expense_analyzer.database.models import Category
-
+import logging
+from typing import List, Optional
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-
-import logging
-from typing import List, Optional
+from expense_analyzer.database.models import Category
 
 
 class CategoryRepository:

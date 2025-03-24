@@ -40,4 +40,3 @@ include = '\.pyi?$'  # Files to include (usually .py and .pyi)
 
 [tool.isort]
 profile = "black"
-line-length = 120

@@ -1,12 +1,10 @@
-from expense_analyzer.database.models import TransactionView, VendorSummary
-
+import logging
+from typing import List
 
 from sqlalchemy import extract, func
 from sqlalchemy.orm import Session
 
-
-import logging
-from typing import List
+from expense_analyzer.database.models import TransactionView, VendorSummary
 
 
 class TransactionViewRepository:
@@ -57,7 +55,7 @@ class TransactionViewRepository:
         transactions = (
             self.db.query(TransactionView)
             .filter(TransactionView.amount < 0)  # Only get expenses (negative amounts)
-            .filter(extract('year', TransactionView.date) == year)
+            .filter(extract("year", TransactionView.date) == year)
             .all()
         )
         return transactions

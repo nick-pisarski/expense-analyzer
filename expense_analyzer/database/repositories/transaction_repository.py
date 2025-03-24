@@ -1,10 +1,11 @@
 """Data access layer for the expense analyzer"""
 
-from typing import List, Optional
-from datetime import datetime
 import logging
-from sqlalchemy.orm import Session
+from datetime import datetime
+from typing import List, Optional
+
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
 from expense_analyzer.database.models import Transaction
 
@@ -77,5 +78,3 @@ class TransactionRepository:
         )
         self.logger.debug(f"Retrieved {len(transactions)} transactions in date range")
         return transactions
-
-

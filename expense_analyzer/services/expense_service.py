@@ -1,18 +1,23 @@
-from typing import List
 import logging
 from datetime import datetime
+from typing import List
+
 from sqlalchemy.orm import Session
 
-from expense_analyzer.database.repositories.category_repository import CategoryRepository
-from expense_analyzer.database.repositories.transaction_category_repository import TransactionCategoryRepository
+from expense_analyzer.categorizers import SimpleCategorizer
+from expense_analyzer.database.connection import get_db
+from expense_analyzer.database.models import Category, Transaction
+from expense_analyzer.database.repositories.category_repository import (
+    CategoryRepository,
+)
+from expense_analyzer.database.repositories.transaction_category_repository import (
+    TransactionCategoryRepository,
+)
 from expense_analyzer.database.repositories.transaction_repository import (
     TransactionRepository,
 )
-from expense_analyzer.database.connection import get_db
-from expense_analyzer.models.transaction import ReportTransaction
-from expense_analyzer.database.models import Transaction, Category
 from expense_analyzer.embedder.transaction_embedder import TransactionEmbedder
-from expense_analyzer.categorizers import SimpleCategorizer
+from expense_analyzer.models.transaction import ReportTransaction
 
 
 class ExpenseService:

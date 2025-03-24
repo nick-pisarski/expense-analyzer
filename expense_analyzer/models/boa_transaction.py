@@ -1,5 +1,5 @@
-from expense_analyzer.models.transaction import ReportTransaction
 from expense_analyzer.models.source import Source
+from expense_analyzer.models.transaction import ReportTransaction
 
 
 class BankOfAmericaTransaction(ReportTransaction):

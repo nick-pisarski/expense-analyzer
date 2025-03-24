@@ -1,15 +1,19 @@
 """Main entry point for the expense analyzer"""
 
-from pprint import pprint
-from dotenv import load_dotenv
 from datetime import datetime
+from pprint import pprint
+
+from dotenv import load_dotenv
 
 from expense_analyzer.database.models import Transaction
 from expense_analyzer.expense_analyzer import ExpenseAnalyzer
-from expense_analyzer.report_generators.markdown_generator import MarkdownExpenseReportGenerator
+from expense_analyzer.report_generators.markdown_generator import (
+    MarkdownExpenseReportGenerator,
+)
 from expense_analyzer.services.expense_service import ExpenseService
 from expense_analyzer.services.report_service import ReportService
 from expense_analyzer.utils.logging_config import configure_logging
+
 load_dotenv()
 configure_logging()
 
@@ -63,11 +67,13 @@ def categorize_transactions(transaction_id: int):
     print("Category:")
     print(category.name)
 
+
 def test_report_service():
     """Test the ReportService"""
     report_service = ReportService()
     report = report_service.generate_report_data(2025)
     pprint(report)
+
 
 def main():
     """Main entry point for the expense analyzer"""
@@ -93,6 +99,7 @@ def main():
 
     # Test the report generation
     # test_report_service()
+
 
 if __name__ == "__main__":
     main()
