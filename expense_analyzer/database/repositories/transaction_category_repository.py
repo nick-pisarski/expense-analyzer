@@ -126,12 +126,12 @@ class TransactionCategoryRepository:
         transactions = (
             self.db.query(
                 Transaction.vendor,
-                func.count(Transaction.id).label("transaction_count"),
+                func.count().label("transaction_count"),
                 func.sum(Transaction.amount).label("total_amount"),
             )
             .where(Transaction.amount < 0, extract("year", Transaction.date) == year)
             .group_by(Transaction.vendor)
-            .order_by(func.count(Transaction.id).desc())
+            .order_by(func.count().desc())
             .limit(limit)
             .all()
         )
