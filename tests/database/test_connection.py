@@ -20,19 +20,11 @@ class TestDatabaseConnection(unittest.TestCase):
         mock_session_local.return_value = mock_db
 
         # Act
-        db_generator = get_db()
-        db = next(db_generator)
+        db = get_db()
 
         # Assert
         self.assertEqual(db, mock_db)
-
-        # Test that the session is closed when the generator is exhausted
-        try:
-            next(db_generator)
-        except StopIteration:
-            pass
-
-        mock_db.close.assert_called_once()
+        mock_session_local.assert_called_once()
 
     @patch.dict(os.environ, {"DATABASE_URL": "postgresql://test:test@localhost/test"})
     @patch("expense_analyzer.database.connection.create_engine")
