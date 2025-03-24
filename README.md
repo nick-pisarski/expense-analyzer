@@ -142,3 +142,9 @@ This modular design allows the system to evolve as your reporting needs change, 
 2. Improved Report Generation
 3. Documentation on running
 4. Clean up the startup SQL script for categories
+5. Make it a runnable console
+
+### Tenative Features
+
+1. Use LLM to write detail descriptions of the transaction, maybe use web search.
+2. Use an LLM to consume an entire statement and return a list of transcations, instead of writing custom consumers for each type.
