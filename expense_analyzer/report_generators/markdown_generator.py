@@ -1,7 +1,13 @@
 from typing import Dict, List, Optional
 
 from expense_analyzer.database.models import Category, VendorSummary
-from expense_analyzer.models.reports import CategorySummary, OverviewSummary, ReportData, ReportDataItem
+from expense_analyzer.models.reports import (
+    AverageMonthSummary,
+    CategorySummary,
+    OverviewSummary,
+    ReportData,
+    ReportDataItem,
+)
 from expense_analyzer.report_generators.base_generator import ExpenseReportGenerator
 
 
@@ -19,13 +25,15 @@ class MarkdownExpenseReportGenerator(ExpenseReportGenerator):
         md += self._get_top_expenses_summary(expense_report_data.top_expenses)
         md += self._get_per_month_summary(expense_report_data.per_month_data)
         md += self._get_year_summary(expense_report_data.year, expense_report_data.per_year_data)
+        md += self._get_average_month_summary(expense_report_data.average_month)
         return md
 
     def _generate_summary(self, report_data: ReportData) -> str:
         """Generate a markdown summary"""
         md = f"- Total Transactions: {report_data.total_transactions}\n"
         md += f"- Total Expenses:     ${abs(report_data.total_amount):.2f}\n"
-        md += "\n"
+        md += f"- Top Vendor:         {report_data.highest_spending_vendor.vendor} (${report_data.highest_spending_vendor.total_amount:.2f})\n"
+        md += f"- Highest Spending Month: {report_data.highest_spending_month[0]} (${report_data.highest_spending_month[1].total_expenses:.2f})\n"
         return md
 
     def _get_top_vendor_summary(self, top_vendors: List[VendorSummary]) -> str:
@@ -45,6 +53,18 @@ class MarkdownExpenseReportGenerator(ExpenseReportGenerator):
         md += "|------|--------|--------|----------|--------------|\n"
         for expense in top_expenses:
             md += f"| {expense.date.strftime('%Y-%m-%d')} | {expense.vendor} | ${expense.amount:.2f} | {expense.category.name} | {expense.sub_category.name} |\n"
+        md += "\n"
+        return md
+
+    def _get_average_month_summary(self, average_month: AverageMonthSummary) -> str:
+        """Generate a markdown summary of the average month"""
+        md = "## Average Month\n\n"
+        md += f"Estimated Total Expenses: ${average_month.estimated_total_expenses:.2f}\n"
+        md += "\n"
+        md += "| Category | Amount |\n"
+        md += "|----------|--------|\n"
+        for category, amount in average_month.category_summaries.items():
+            md += f"| {category.name} | ${amount:>7.2f} |\n"
         md += "\n"
         return md
 

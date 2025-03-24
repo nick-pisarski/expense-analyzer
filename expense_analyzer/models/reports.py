@@ -79,6 +79,15 @@ class OverviewSummary:
         """Get the net balance"""
         return self.total_incomes - abs(self.total_expenses)
 
+
+@dataclass
+class AverageMonthSummary:
+    """data class for storing average month summary"""
+
+    estimated_total_expenses: float
+    category_summaries: Dict[Category, float]
+
+
 @dataclass
 class ReportData:
     """Data class for storing report data"""
@@ -87,7 +96,7 @@ class ReportData:
     # Data for pie charts
     per_month_data: Dict[str, OverviewSummary]
     per_year_data: OverviewSummary
-    average_month: OverviewSummary
+    average_month: AverageMonthSummary
 
     highest_spending_month: Dict[str, float]
     highest_spending_vendor: Dict[str, float]
