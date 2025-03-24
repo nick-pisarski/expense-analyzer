@@ -10,9 +10,7 @@ from expense_analyzer.database.repositories.category_repository import (
 from expense_analyzer.database.repositories.transaction_category_repository import (
     TransactionCategoryRepository,
 )
-from expense_analyzer.database.repositories.transaction_view_repository import (
-    TransactionViewRepository,
-)
+
 from expense_analyzer.models.reports import (
     AverageMonthSummary,
     CategorySummary,
@@ -28,7 +26,6 @@ class ReportService:
     def __init__(self):
         self.logger = logging.getLogger("expense_analyzer.services.report_service")
         self.db = get_db()
-        self.transaction_view_repository = TransactionViewRepository(self.db)
         self.repository = TransactionCategoryRepository(self.db)
         self.category_repository = CategoryRepository(self.db)
 

@@ -7,8 +7,5 @@ from expense_analyzer.database.repositories.transaction_category_repository impo
 from expense_analyzer.database.repositories.transaction_repository import (
     TransactionRepository,
 )
-from expense_analyzer.database.repositories.transaction_view_repository import (
-    TransactionViewRepository,
-)
 
-__all__ = ["TransactionRepository", "TransactionCategoryRepository", "TransactionViewRepository", "CategoryRepository"]
+__all__ = ["TransactionRepository", "TransactionCategoryRepository", "CategoryRepository"]
