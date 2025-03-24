@@ -3,7 +3,7 @@ import logging
 from datetime import datetime
 from sqlalchemy.orm import Session
 
-from expense_analyzer.database.repository import (
+from expense_analyzer.database.repositories.repository import (
     TransactionRepository,
     CategoryRepository,
     TransactionCategoryRepository,

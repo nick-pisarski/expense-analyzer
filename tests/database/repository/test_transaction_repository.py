@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from expense_analyzer.database.models import Transaction
-from expense_analyzer.database.repository import TransactionRepository
+from expense_analyzer.database.repositories.repository import TransactionRepository
 from expense_analyzer.models.source import Source
 
 

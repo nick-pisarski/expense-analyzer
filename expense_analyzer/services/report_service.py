@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List, Dict, Tuple
 import logging
 from expense_analyzer.database.models import Category, VendorSummary, TransactionView
-from expense_analyzer.database.repository import TransactionViewRepository
+from expense_analyzer.database.repositories.repository import TransactionViewRepository
 from expense_analyzer.database.connection import get_db
 from expense_analyzer.models.reports import ReportData, ReportDataItem, CategorySummary 
 

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 
 from expense_analyzer.database.models import Category
-from expense_analyzer.database.repository import CategoryRepository
+from expense_analyzer.database.repositories.repository import CategoryRepository
 
 
 class TestCategoryRepository(unittest.TestCase):
