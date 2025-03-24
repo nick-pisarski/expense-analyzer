@@ -28,10 +28,13 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         """Test that logger is created during initialization."""
         # Act
         repo = TransactionCategoryRepository(self.mock_db)
-        
+
         # Assert
         self.assertIsNotNone(repo.logger)
-        self.assertEqual(repo.logger.name, "expense_analyzer.database.repositories.transaction_category_repository.TransactionCategoryRepository")
+        self.assertEqual(
+            repo.logger.name,
+            "expense_analyzer.database.repositories.transaction_category_repository.TransactionCategoryRepository",
+        )
 
     @patch("logging.getLogger")
     def test_logger_debug_called(self, mock_get_logger):
@@ -39,12 +42,14 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         # Arrange
         mock_logger = MagicMock()
         mock_get_logger.return_value = mock_logger
-        
+
         # Act
         repo = TransactionCategoryRepository(self.mock_db)
-        
+
         # Assert
-        mock_get_logger.assert_called_once_with("expense_analyzer.database.repositories.transaction_category_repository.TransactionCategoryRepository")
+        mock_get_logger.assert_called_once_with(
+            "expense_analyzer.database.repositories.transaction_category_repository.TransactionCategoryRepository"
+        )
         mock_logger.debug.assert_called_once_with("TransactionCategoryRepository initialized")
 
     def test_get_transactions(self):
@@ -63,7 +68,7 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         query_mock.options.assert_called_once()
         options_mock.all.assert_called_once()
         self.assertEqual(result, mock_transactions)
-        
+
     def test_get_transactions_empty_result(self):
         """Test retrieving all transactions with categories when no transactions exist."""
         # Arrange
@@ -87,7 +92,7 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         query_mock = self.mock_db.query.return_value
         options_mock = query_mock.options.return_value
         options_mock.all.side_effect = SQLAlchemyError("Database error")
-        
+
         # Act/Assert
         with self.assertRaises(SQLAlchemyError):
             self.repo.get_transactions()
@@ -98,7 +103,7 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         transaction_id = 1
         mock_transaction = MagicMock(spec=Transaction)
         mock_transaction.id = transaction_id
-        
+
         query_mock = self.mock_db.query.return_value
         options_mock = query_mock.options.return_value
         filter_mock = options_mock.filter.return_value
@@ -113,12 +118,12 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         options_mock.filter.assert_called_once()
         filter_mock.first.assert_called_once()
         self.assertEqual(result, mock_transaction)
-        
+
     def test_get_transaction_not_found(self):
         """Test retrieving a non-existent transaction by ID."""
         # Arrange
         transaction_id = 999
-        
+
         query_mock = self.mock_db.query.return_value
         options_mock = query_mock.options.return_value
         filter_mock = options_mock.filter.return_value
@@ -129,12 +134,12 @@ class TestTransactionCategoryRepository(unittest.TestCase):
 
         # Assert
         self.assertIsNone(result)
-        
+
     def test_get_transactions_with_category(self):
         """Test retrieving all transactions that have a category assigned."""
         # Arrange
         mock_transactions = [MagicMock(spec=Transaction) for _ in range(2)]
-        
+
         query_mock = self.mock_db.query.return_value
         options_mock = query_mock.options.return_value
         filter_mock = options_mock.filter.return_value
@@ -149,7 +154,7 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         options_mock.filter.assert_called_once()
         filter_mock.all.assert_called_once()
         self.assertEqual(result, mock_transactions)
-        
+
     def test_get_transactions_with_category_empty_result(self):
         """Test retrieving transactions with categories when none have categories."""
         # Arrange
@@ -168,14 +173,14 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         filter_mock.all.assert_called_once()
         self.assertEqual(result, [])
         self.assertEqual(len(result), 0)
-        
+
     def test_get_transactions_by_date_range(self):
         """Test retrieving transactions within a date range."""
         # Arrange
         start_date = datetime(2023, 1, 1)
         end_date = datetime(2023, 12, 31)
         mock_transactions = [MagicMock(spec=Transaction) for _ in range(5)]
-        
+
         query_mock = self.mock_db.query.return_value
         options_mock = query_mock.options.return_value
         filter_mock = options_mock.filter.return_value
@@ -190,14 +195,14 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         options_mock.filter.assert_called_once()
         filter_mock.all.assert_called_once()
         self.assertEqual(result, mock_transactions)
-        
+
     def test_get_transactions_by_date_range_invalid_dates(self):
         """Test retrieving transactions with start date after end date."""
         # Arrange
         start_date = datetime(2023, 12, 31)
         end_date = datetime(2023, 1, 1)  # End date before start date
         mock_transactions = []
-        
+
         query_mock = self.mock_db.query.return_value
         options_mock = query_mock.options.return_value
         filter_mock = options_mock.filter.return_value
@@ -213,13 +218,13 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         filter_mock.all.assert_called_once()
         self.assertEqual(result, [])
         self.assertEqual(len(result), 0)
-        
+
     def test_get_transactions_by_category(self):
         """Test retrieving transactions by category ID."""
         # Arrange
         category_id = 1
         mock_transactions = [MagicMock(spec=Transaction) for _ in range(3)]
-        
+
         query_mock = self.mock_db.query.return_value
         options_mock = query_mock.options.return_value
         filter_mock = options_mock.filter.return_value
@@ -234,12 +239,12 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         options_mock.filter.assert_called_once()
         filter_mock.all.assert_called_once()
         self.assertEqual(result, mock_transactions)
-        
+
     def test_get_transactions_by_category_nonexistent(self):
         """Test retrieving transactions for a category that doesn't exist."""
         # Arrange
         category_id = 999  # Non-existent category
-        
+
         query_mock = self.mock_db.query.return_value
         options_mock = query_mock.options.return_value
         filter_mock = options_mock.filter.return_value
@@ -255,13 +260,13 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         filter_mock.all.assert_called_once()
         self.assertEqual(result, [])
         self.assertEqual(len(result), 0)
-        
+
     def test_get_transactions_by_category_name(self):
         """Test retrieving transactions by category name."""
         # Arrange
         category_name = "Entertainment"
         mock_transactions = [MagicMock(spec=Transaction) for _ in range(3)]
-        
+
         query_mock = self.mock_db.query.return_value
         options_mock = query_mock.options.return_value
         filter_mock = options_mock.filter.return_value
@@ -276,12 +281,12 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         options_mock.filter.assert_called_once()
         filter_mock.all.assert_called_once()
         self.assertEqual(result, mock_transactions)
-        
+
     def test_get_transactions_by_category_name_nonexistent(self):
         """Test retrieving transactions for a category name that doesn't exist."""
         # Arrange
-        category_name = "NonExistentCategory"  
-        
+        category_name = "NonExistentCategory"
+
         query_mock = self.mock_db.query.return_value
         options_mock = query_mock.options.return_value
         filter_mock = options_mock.filter.return_value
@@ -304,7 +309,7 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         embedding = [0.1, 0.2, 0.3]
         limit = 5
         mock_transactions = [MagicMock(spec=Transaction) for _ in range(limit)]
-        
+
         query_mock = self.mock_db.query.return_value
         options_mock = query_mock.options.return_value
         filter_mock = options_mock.filter.return_value
@@ -313,7 +318,7 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         limit_mock.all.return_value = mock_transactions
 
         # Act
-        with patch('numpy.array', return_value=np.array(embedding)) as mock_np_array:
+        with patch("numpy.array", return_value=np.array(embedding)) as mock_np_array:
             result = self.repo.find_similar_transactions(embedding, limit)
 
         # Assert
@@ -325,28 +330,28 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         order_by_mock.limit.assert_called_once_with(limit)
         limit_mock.all.assert_called_once()
         self.assertEqual(result, mock_transactions)
-        
+
     def test_find_similar_transactions_empty_embedding(self):
         """Test finding similar transactions with an empty embedding."""
         # Arrange
         embedding = []
         limit = 5
-        
+
         # Act/Assert
         with self.assertRaises(ValueError):
-            with patch('numpy.array', side_effect=ValueError("empty array")) as mock_np_array:
+            with patch("numpy.array", side_effect=ValueError("empty array")) as mock_np_array:
                 self.repo.find_similar_transactions(embedding, limit)
-                
+
         # Assert
         mock_np_array.assert_called_once_with(embedding)
-        
+
     def test_find_similar_transactions_custom_limit(self):
         """Test finding transactions with custom limit."""
         # Arrange
         embedding = [0.1, 0.2, 0.3]
         limit = 10  # Custom limit
         mock_transactions = [MagicMock(spec=Transaction) for _ in range(limit)]
-        
+
         query_mock = self.mock_db.query.return_value
         options_mock = query_mock.options.return_value
         filter_mock = options_mock.filter.return_value
@@ -355,7 +360,7 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         limit_mock.all.return_value = mock_transactions
 
         # Act
-        with patch('numpy.array', return_value=np.array(embedding)) as mock_np_array:
+        with patch("numpy.array", return_value=np.array(embedding)) as mock_np_array:
             result = self.repo.find_similar_transactions(embedding, limit)
 
         # Assert
@@ -368,7 +373,7 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         year = 2023
         limit = 5
         mock_transactions = [MagicMock(spec=Transaction) for _ in range(limit)]
-        
+
         query_mock = self.mock_db.query.return_value
         options_mock = query_mock.options.return_value
         where_mock = options_mock.where.return_value
@@ -387,14 +392,14 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         order_by_mock.limit.assert_called_once_with(limit)
         limit_mock.all.assert_called_once()
         self.assertEqual(result, mock_transactions)
-        
+
     def test_get_top_expenses_custom_limit(self):
         """Test retrieving top expenses with custom limit."""
         # Arrange
         year = 2023
         limit = 10
         mock_transactions = [MagicMock(spec=Transaction) for _ in range(limit)]
-        
+
         query_mock = self.mock_db.query.return_value
         options_mock = query_mock.options.return_value
         where_mock = options_mock.where.return_value
@@ -408,13 +413,13 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         # Assert
         order_by_mock.limit.assert_called_once_with(limit)
         self.assertEqual(len(result), limit)
-        
+
     def test_get_top_expenses_no_expenses(self):
         """Test retrieving top expenses when no expenses exist for the year."""
         # Arrange
         year = 2020  # Year with no expenses
         limit = 5
-        
+
         query_mock = self.mock_db.query.return_value
         options_mock = query_mock.options.return_value
         where_mock = options_mock.where.return_value
@@ -435,16 +440,16 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         year = 2023
         limit = 5
         mock_results = [
-            ('Vendor1', 10, -500.0),
-            ('Vendor2', 5, -300.0),
-            ('Vendor3', 3, -200.0),
+            ("Vendor1", 10, -500.0),
+            ("Vendor2", 5, -300.0),
+            ("Vendor3", 3, -200.0),
         ]
         expected_summaries = [
-            VendorSummary(vendor='Vendor1', count=10, total_amount=500.0),
-            VendorSummary(vendor='Vendor2', count=5, total_amount=300.0),
-            VendorSummary(vendor='Vendor3', count=3, total_amount=200.0),
+            VendorSummary(vendor="Vendor1", count=10, total_amount=500.0),
+            VendorSummary(vendor="Vendor2", count=5, total_amount=300.0),
+            VendorSummary(vendor="Vendor3", count=3, total_amount=200.0),
         ]
-        
+
         query_mock = self.mock_db.query.return_value
         where_mock = query_mock.where.return_value
         group_by_mock = where_mock.group_by.return_value
@@ -462,20 +467,20 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         group_by_mock.order_by.assert_called_once()
         order_by_mock.limit.assert_called_once_with(limit)
         limit_mock.all.assert_called_once()
-        
+
         self.assertEqual(len(result), len(expected_summaries))
         for i, summary in enumerate(result):
             self.assertEqual(summary.vendor, expected_summaries[i].vendor)
             self.assertEqual(summary.count, expected_summaries[i].count)
             self.assertEqual(summary.total_amount, expected_summaries[i].total_amount)
-            
+
     def test_get_top_vendors_custom_limit(self):
         """Test retrieving top vendors with custom limit."""
         # Arrange
         year = 2023
         limit = 10
-        mock_results = [('Vendor1', 10, -500.0)]  # Just need one for this test
-        
+        mock_results = [("Vendor1", 10, -500.0)]  # Just need one for this test
+
         query_mock = self.mock_db.query.return_value
         where_mock = query_mock.where.return_value
         group_by_mock = where_mock.group_by.return_value
@@ -488,13 +493,13 @@ class TestTransactionCategoryRepository(unittest.TestCase):
 
         # Assert
         order_by_mock.limit.assert_called_once_with(limit)
-        
+
     def test_get_top_vendors_no_vendors(self):
         """Test retrieving top vendors when no vendors exist for the year."""
         # Arrange
         year = 2020  # Year with no vendors
         limit = 5
-        
+
         query_mock = self.mock_db.query.return_value
         where_mock = query_mock.where.return_value
         group_by_mock = where_mock.group_by.return_value
@@ -508,16 +513,16 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         # Assert
         self.assertEqual(result, [])
         self.assertEqual(len(result), 0)
-        
+
     def test_get_top_vendors_database_error(self):
         """Test that get_top_vendors handles database errors."""
         # Arrange
         year = 2023
         limit = 5
-        
+
         query_mock = self.mock_db.query.return_value
         query_mock.where.side_effect = SQLAlchemyError("Database error")
-        
+
         # Act/Assert
         with self.assertRaises(SQLAlchemyError):
             self.repo.get_top_vendors(year, limit)
@@ -527,7 +532,7 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         # Arrange
         year = 2023
         mock_transactions = [MagicMock(spec=Transaction) for _ in range(10)]
-        
+
         query_mock = self.mock_db.query.return_value
         options_mock = query_mock.options.return_value
         where_mock = options_mock.where.return_value
@@ -542,12 +547,12 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         options_mock.where.assert_called_once()
         where_mock.all.assert_called_once()
         self.assertEqual(result, mock_transactions)
-        
+
     def test_get_transactions_by_year_no_transactions(self):
         """Test retrieving transactions for a year with no transactions."""
         # Arrange
         year = 2020  # Year with no transactions
-        
+
         query_mock = self.mock_db.query.return_value
         options_mock = query_mock.options.return_value
         where_mock = options_mock.where.return_value
@@ -559,22 +564,22 @@ class TestTransactionCategoryRepository(unittest.TestCase):
         # Assert
         self.assertEqual(result, [])
         self.assertEqual(len(result), 0)
-        
+
     def test_get_transactions_by_year_invalid_year(self):
         """Test retrieving transactions with an invalid year format."""
         # Arrange
         year = "invalid_year"  # Non-integer year
-        
+
         # Set up the mocks to raise the expected SQLAlchemy error when extract function is called
         query_mock = self.mock_db.query.return_value
         options_mock = query_mock.options.return_value
         # Simulate the error being raised when SQLAlchemy tries to process the invalid year
         options_mock.where.side_effect = SQLAlchemyError("Invalid input syntax for type integer")
-        
+
         # Act/Assert
         with self.assertRaises(SQLAlchemyError):
             self.repo.get_transactions_by_year(year)
 
 
 if __name__ == "__main__":
-    unittest.main() 
+    unittest.main()
