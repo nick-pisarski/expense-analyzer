@@ -60,6 +60,7 @@ class SimpleCategorizer:
         prompt = self._get_prompt(transaction, similar_transactions, sub_categories)
         self.logger.debug(f"Prompt: {prompt}")
         response = self.client.chat.completions.create(
+            # TODO: Update model to be an environment variable
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": prompt},
