@@ -13,14 +13,15 @@ You are given a transaction and a list of similar transactions that have already
 You need to categorize the transaction into one of the following categories:
 {categories}
 
-Here are the similar transactions that have already been categorized and could be useful for making the categorization:
+Use the similar transactions to help make the categorization.
+Here are the similar transactions that have already been categorized, with the first one being the most similar and the last one being the least similar
 {similar_transactions}
 
 The transaction to categorize is:
 {transaction}
 
 Use all of the information provided to make the best categorization.
-If a category is not clearly assigned, return only the word 'None'.
+If a category can not be clearly assigned, return only the word 'None'.
 
 Return the category id of the transaction and nothing else.
 """
