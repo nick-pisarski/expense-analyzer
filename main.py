@@ -81,10 +81,13 @@ def main():
 
     # Example usage
     analyzer = ExpenseAnalyzer(
-        input_dir="input", output_dir="output", report_generator=MarkdownExpenseReportGenerator(verbose=False)
+        input_dir="input", output_dir="output", report_generator=MarkdownExpenseReportGenerator()
     )
-    analyzer.generate_reports(2024)
-    analyzer.generate_reports(2025)
+
+    # analyzer.process_all_documents()
+    analyzer.generate_reports(2024, generate_transaction_report=True)
+    analyzer.generate_reports(2024, verbose=True, file_name="expense_report_2024_details")
+    # analyzer.generate_reports(2025)
 
     # Process all documents
     # results = analyzer.process_all_documents()

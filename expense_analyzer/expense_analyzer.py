@@ -129,7 +129,7 @@ class ExpenseAnalyzer:
             expense_service.update_transactions_category(transactions)
             self.logger.debug(f"Categorizing Complete")
 
-    def generate_reports(self, year: int, file_name: Optional[str] = None) -> str:
+    def generate_reports(self, year: int, file_name: Optional[str] = None, verbose: bool = False, generate_transaction_report: bool = False) -> str:
         """Generate a monthly report and save it to the output directory
 
         Args:
@@ -142,6 +142,13 @@ class ExpenseAnalyzer:
         report_file = self.output_dir / "reports" / f"{file_name}.md"
         report_data = self.report_service.generate_report_data(year)
         with open(report_file, "w", encoding="utf-8") as f:
-            f.write(self.report_generator.generate_report(report_data))
+            f.write(self.report_generator.generate_report(report_data, verbose=verbose))
 
         self.logger.info(f"Saved monthly report to {report_file}")
+
+        if generate_transaction_report:
+            report_file = self.output_dir / "reports" / f"{file_name}_transactions.md"
+            with open(report_file, "w", encoding="utf-8") as f:
+                f.write(self.report_generator.generate_transaction_table(report_data, title=f"{year} Transactions"))
+
+            self.logger.info(f"Saved transactions to {report_file}")

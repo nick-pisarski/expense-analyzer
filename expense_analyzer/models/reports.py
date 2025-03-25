@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 from expense_analyzer.database.models import Category, VendorSummary
 
@@ -98,11 +98,24 @@ class ReportData:
     per_year_data: OverviewSummary
     average_month: AverageMonthSummary
 
-    highest_spending_month: Dict[str, float]
-    highest_spending_vendor: Dict[str, float]
+    highest_spending_month: Tuple[str, float]
+    lowest_spending_month: Tuple[str, float]
+    highest_spending_vendor: Tuple[str, float]
 
     top_vendors: List[VendorSummary]
     top_expenses: List[ReportDataItem]
 
     total_amount: float
     total_transactions: int
+
+    def get_transactions(self) -> List[ReportDataItem]:
+        """Get all transactions"""
+        transactions = [
+            transaction
+            for category_summary in self.per_year_data.category_summaries.values()
+            for transaction in category_summary.transactions
+        ]
+        # sort by date
+        transactions.sort(key=lambda x: x.date)
+
+        return transactions

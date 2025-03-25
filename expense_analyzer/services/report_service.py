@@ -46,6 +46,7 @@ class ReportService:
             top_vendors=vendor_summaries,
             top_expenses=self._get_top_expenses(categories, year),
             highest_spending_month=self._get_highest_spending_month(per_month_data),
+            lowest_spending_month=self._get_lowest_spending_month(per_month_data),
             highest_spending_vendor=self._get_highest_spending_vendor(vendor_summaries),
             total_amount=self._get_total_expenses(transactions),
             total_transactions=len(transactions),
@@ -104,8 +105,13 @@ class ReportService:
 
     def _get_highest_spending_month(self, per_month_data: Dict[str, OverviewSummary]) -> Tuple[str, OverviewSummary]:
         """Get the highest spending month"""
-        max_month = max(per_month_data.items(), key=lambda x: x[1].total_expenses)
+        max_month = max(per_month_data.items(), key=lambda x: abs(x[1].total_expenses))
         return max_month[0], max_month[1]
+
+    def _get_lowest_spending_month(self, per_month_data: Dict[str, OverviewSummary]) -> Tuple[str, OverviewSummary]:
+        """Get the lowest spending month"""
+        min_month = min(per_month_data.items(), key=lambda x: abs(x[1].total_expenses))
+        return min_month[0], min_month[1]
 
     def _get_highest_spending_vendor(self, vendor_summaries: List[VendorSummary]) -> VendorSummary:
         """Get the highest spending vendor"""

@@ -26,7 +26,19 @@ class TransactionEmbedder:
             f"Category: {transaction.category.name if transaction.category else 'Uncategorized'}"
         )
 
-    def embed_transaction(self, transaction: Transaction) -> List[float]:
+    def _transform_transaction_dict_to_text(self, transaction: dict) -> str:
+        """Transform a transaction dictionary into a text string"""
+        return (
+            f"Date: {transaction['date']} "
+            f"Amount: {transaction['amount']} "
+            f"Type: {'expense' if transaction['amount'] < 0 else 'income'} "
+            f"Vendor: {transaction['vendor']} "
+            f"Description: {transaction['description'] or ''} "
+            f"Source: {transaction['source']} "
+            "Category: Uncategorized"
+        )
+
+    def embed_transaction(self, transaction: Transaction | dict) -> List[float]:
         """Embed a transaction into a vector embedding.
 
         Args:
@@ -35,7 +47,10 @@ class TransactionEmbedder:
         Returns:
             A list of floats representing the embedding vector
         """
-        text = self._transform_transaction_to_text(transaction)
+        if isinstance(transaction, Transaction):
+            text = self._transform_transaction_to_text(transaction)
+        else:
+            text = self._transform_transaction_dict_to_text(transaction)
         return self._embed_text(text)
 
     def embed_transactions(self, transactions: List[Transaction]) -> List[List[float]]:

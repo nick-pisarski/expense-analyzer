@@ -21,7 +21,7 @@ The transaction to categorize is:
 {transaction}
 
 Use all of the information provided to make the best categorization.
-If a category can not be clearly assigned, return only the word 'None'.
+If a category can not be clearly assigned, assign it to Uncategorized.
 
 Return the category id of the transaction and nothing else.
 """
@@ -35,9 +35,12 @@ class SimpleCategorizer:
         self.logger.debug("SimpleCategorizer initialized")
         self.client = OpenAI()
 
-    def _get_transaction_string(self, transaction: Transaction) -> str:
+    def _get_transaction_string(self, transaction: Transaction | dict) -> str:
         """Get the string representation of a transaction"""
-        return f"{transaction.id} | {transaction.vendor} | {transaction.amount} | {transaction.date} | {transaction.category_id} | {transaction.category.name if transaction.category else 'None'}"
+        if isinstance(transaction, Transaction):
+            return f"{transaction.id} | {transaction.vendor} | {transaction.amount} | {transaction.date} | {transaction.category_id} | {transaction.category.name if transaction.category else 'None'}"
+        else:
+            return f"None | {transaction['vendor']} | {transaction['amount']} | {transaction['date']} | Uncategorized | Uncategorized"
 
     def _get_prompt(
         self, transaction: Transaction, similar_transactions: List[Transaction], sub_categories: List[Category]
@@ -55,7 +58,7 @@ class SimpleCategorizer:
         )
 
     def categorize(
-        self, transaction: Transaction, similar_transactions: List[Transaction], sub_categories: List[Category]
+        self, transaction: Transaction | dict, similar_transactions: List[Transaction], sub_categories: List[Category]
     ) -> Category | None:
         """Categorize a transaction"""
         prompt = self._get_prompt(transaction, similar_transactions, sub_categories)
@@ -73,12 +76,22 @@ class SimpleCategorizer:
         if category_id and category_id.isdigit():
             # Find category by id
             category = next((c for c in sub_categories if c.id == int(category_id)), None)
-            self.logger.info(
-                f"Category Assigned: {category.name} ({category.id}) for transaction {transaction.vendor} ({transaction.id})"
-            )
+            if isinstance(transaction, Transaction):
+                self.logger.info(
+                    f"Category Assigned: {category.name} ({category.id}) for transaction {transaction.vendor} ({transaction.id})"
+                )
+            else:
+                self.logger.info(
+                    f"Category Assigned: {category.name} ({category.id}) for transaction {transaction['vendor']} (New)"
+                )
             return category
 
-        self.logger.warning(
-            f"No category id or invalid category id returned for transaction {transaction.id} category_id: {category_id}"
-        )
+        if isinstance(transaction, Transaction):
+            self.logger.warning(
+                f"No category id or invalid category id returned for transaction {transaction.id} category_id: {category_id}"
+            )
+        else:
+            self.logger.warning(
+                f"No category id or invalid category id returned for transaction {transaction['vendor']} (New) category_id: {category_id}"
+            )
         return None
