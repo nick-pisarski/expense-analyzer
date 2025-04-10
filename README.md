@@ -148,3 +148,5 @@ This modular design allows the system to evolve as your reporting needs change, 
 
 1. Use LLM to write detail descriptions of the transaction, maybe use web search.
 2. Use an LLM to consume an entire statement and return a list of transcations, instead of writing custom consumers for each type.
+3. Add the ability use Ollama Local models, Categorization is not super complex
+   and could use a smaller model.
